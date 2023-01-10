@@ -2,11 +2,11 @@
   cursor: pointer;
 }
 
-.legend-item.no-select-item {
+.legend-item.noselect-item {
   color: #ccc;
 }
 
-.legend-item.no-select-item .legend-icon {
+.legend-item.noselect-item .legend-icon {
   background: #ccc !important;
   transform: scale(1.5);
 }

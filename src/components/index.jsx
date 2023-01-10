@@ -288,13 +288,24 @@ const Pie = (props) => {
     handleHightlight({ seriesIndex, dataIndex: idx, isShowTip: true });
   }, [idx]);
 
-  const handleLegendHover = (index, seriesIndex) => {
+  const handleLegendHover = (name) => {
     if (timerRef.current) {
       clearInterval(timerRef.current);
     }
+
+    const legendObj = {};
+    flatAndUnique(dataSource).forEach(item => {
+      const { name, seriesIndex, dataIndex } = item;
+      if (!legendObj[name]) {
+        legendObj[name] = {};
+      }
+
+      legendObj[name][seriesIndex] = dataIndex;
+    })
+    const legendItem = legendObj[name];
     handleHightlight({
-      seriesIndex,
-      dataIndex: index,
+      seriesIndex: Object.keys(legendItem),
+      dataIndex: legendItem,
     });
   };
 
@@ -305,10 +316,15 @@ const Pie = (props) => {
     createInterval();
   };
 
-  const handleLegendClick = (index, seriesIndex) => {
+  const handleLegendClick = (name) => {
     const newData = [...dataSource];
-    const show = newData[seriesIndex][index].show;
-    newData[seriesIndex][index].show = !show;
+    flatAndUnique(dataSource).forEach(item => {
+      if (item.name === name) {
+        const { seriesIndex, dataIndex } = item;
+        const show = newData[seriesIndex][dataIndex].show;
+        newData[seriesIndex][dataIndex].show = !show;
+      }
+    })
 
     setDataSource(newData);
   };
