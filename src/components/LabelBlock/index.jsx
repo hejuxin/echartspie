@@ -1,5 +1,6 @@
 import React from 'react';
 import { getParams } from '../../utils';
+import './index.css';
 
 const LabelBlock = (props) => {
   const { data, labelPos, option, hightlightIndex } = props;
@@ -30,14 +31,13 @@ const LabelBlock = (props) => {
         return (
           <div
             style={{
-              position: 'absolute',
               left: endPos?.[0],
               top: endPos?.[1],
               transform: `translate(${isLeft ? '-100%' : 0}, -50%)`,
               maxWidth: endPos?.[0],
-              wordBreak: 'keep-all',
             }}
             key={`label_${item.name}`}
+            className='label-item'
           >
             {activeLabel?.content
               ? isActive
