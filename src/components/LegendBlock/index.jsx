@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { getParams, isNum } from '../../utils';
 import './index.css';
 // import styles from './index.module.scss'
@@ -10,7 +10,24 @@ const LegendBlock = (props) => {
     handleLegendLeave,
     handleLegendClick,
   } = props;
-  const { wrapStyle = {} } = option
+  const { wrapStyle = {} } = option;
+  const dataSource = useMemo(() => {
+    const obj = {};
+    data.forEach(item => {
+      const { name, seriesIndex, dataIndex } = item;
+      // if (!obj[name]) {
+      //   obj[name] = {};
+      // }
+
+      // obj[name][seriesIndex] = dataIndex;
+
+      if (!obj[name]) {
+        obj[name] = item;
+      }
+    })
+    return Object.values(obj)
+  }, [data])
+
   return (
     <div
       style={{
@@ -24,17 +41,17 @@ const LegendBlock = (props) => {
         ...wrapStyle
       }}
     >
-      {data.map((item, index) => {
-        const params = getParams({ data, index });
-        const { seriesIndex = 0, dataIndex = 0, name, show } = item;
+      {dataSource.map((item, index) => {
+        const params = getParams({ data: dataSource, index });
+        const { name, show } = item;
         return (
           <div
-            onMouseOver={() => handleLegendHover(dataIndex, seriesIndex)}
+            onMouseOver={() => handleLegendHover(name)}
             onMouseOut={() => handleLegendLeave()}
-            onClick={() => handleLegendClick(dataIndex, seriesIndex)}
+            onClick={() => handleLegendClick(name)}
             // className={`${styles['legend-item']} 
             // ${show ? '' : ` ${styles['noselect-item']}`}`}
-            className={`legend-item ${show ? '' : ' noselect-item'}`}
+            className={`legend-item${show ? '' : ' noselect-item'}`}
             key={`legend_${name}`}
           >
             {option.content && option.content(params)}
