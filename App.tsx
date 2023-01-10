@@ -22,7 +22,7 @@ import {
   // LabelLegendDemo2,
 
   DoubleDemo3,
-} from './Demo';
+} from './demo';
 
 export default function App() {
   return (

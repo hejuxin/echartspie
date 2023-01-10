@@ -19,7 +19,7 @@ import {
   flatAndUnique,
   getParams,
   isNum,
-} from '../utils';
+} from '../../utils';
 import LabelBlock from './LabelBlock';
 import LegendBlock from './LegendBlock';
 import CenterBlock from './CenterBlock';

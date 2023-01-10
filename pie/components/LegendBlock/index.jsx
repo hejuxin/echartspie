@@ -1,5 +1,5 @@
 import React from 'react';
-import { getParams, isUndefined } from '../../utils';
+import { getParams, isUndefined } from '../../../utils';
 import './index.css';
 const LegendBlock = (props) => {
   const {
