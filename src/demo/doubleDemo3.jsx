@@ -9,12 +9,12 @@ const DoubleDemo3 = () => {
         data={[
           defaultData,
           [
+            { name: 'test1', value: 5 },
+            { name: 'test2', value: 8 },
             {
               name: '区域点位',
               value: 47,
             },
-            { name: 'test1', value: 5 },
-            { name: 'test2', value: 8 },
           ],
         ]}
         // radius={[
