@@ -1,6 +1,6 @@
 import React from 'react';
-import { defaultData } from '../pie/components/defaultOption';
-import DoublePie from '../pie/components';
+import { defaultData } from '../components/defaultOption';
+import DoublePie from '../components';
 
 const DoubleDemo3 = () => {
   return (

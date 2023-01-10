@@ -1,4 +1,4 @@
-import defaultOption, { defaultColor } from './pie/components/defaultOption';
+import defaultOption, { defaultColor } from './components/defaultOption';
 import ReactDOM from 'react-dom/client';
 
 export const formatterLegend = ({

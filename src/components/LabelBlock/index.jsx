@@ -1,5 +1,5 @@
 import React from 'react';
-import { getParams } from '../../../utils';
+import { getParams } from '../../utils';
 
 const LabelBlock = (props) => {
   const { data, labelPos, option, hightlightIndex } = props;

@@ -19,7 +19,7 @@ import {
   flatAndUnique,
   getParams,
   isNum,
-} from '../../utils';
+} from '../utils';
 import LabelBlock from './LabelBlock';
 import LegendBlock from './LegendBlock';
 import CenterBlock from './CenterBlock';
@@ -53,9 +53,8 @@ const Pie = (props) => {
       }
       return item.show ? item : null;
     });
-    if (dataArr.filter(Boolean).length === 0) return [];
+    if (dataArr.filter(Boolean).length === 0) return new Array(dataArr.length).fill(-1);
     return dataArr;
-    // return (dataArr || []).filter(Boolean);
   }, []);
 
   const getOps = (data = []) => {
@@ -157,21 +156,14 @@ const Pie = (props) => {
   };
 
   const handleHightlight = ({ seriesIndex, dataIndex, isShowTip = false }) => {
-    let dataInfo = {};
-    if (isNum(seriesIndex)) {
-      dataInfo = {
-        seriesIndex,
-        dataIndex: isNum(dataIndex) ? dataIndex : dataIndex[seriesIndex],
-      };
-    } else {
-      dataInfo = {
-        batch: seriesIndex.map((item) => {
-          return {
-            seriesIndex: item,
-            dataIndex: isNum(dataIndex) ? dataIndex : dataIndex[item],
-          };
-        }),
-      };
+    const seriesIndexArr = isNum(seriesIndex) ? [seriesIndex] : seriesIndex;
+    const dataInfo = {
+      batch: seriesIndexArr.map((item) => {
+        return {
+          seriesIndex: item,
+          dataIndex: isNum(dataIndex) ? dataIndex : dataIndex[item],
+        };
+      }),
     }
 
     chartRef.current.dispatchAction({
@@ -232,6 +224,7 @@ const Pie = (props) => {
 
     setInit(true);
   };
+
   useLayoutEffect(() => {
     const myChart = echarts.init(domRef.current);
     chartRef.current = myChart;
@@ -283,17 +276,17 @@ const Pie = (props) => {
   }, [init]);
 
   useUpdateLayoutEffect(() => {
-    if (!autoPlay || !timerRef.current) return;
-    const seriesIndex = _autoPlayOption.seriesIndex;
-    handleHightlight({ seriesIndex, dataIndex: idx, isShowTip: true });
-  }, [idx]);
-
-  useUpdateLayoutEffect(() => {
     const ops = getOps(dataSource);
     chartRef.current.setOption(ops);
     // clearInterval(timerRef.current);
     createInterval();
-  }, [dataSource, radiusSource]);
+  }, [dataSource]);
+
+  useUpdateLayoutEffect(() => {
+    if (!autoPlay || !timerRef.current) return;
+    const seriesIndex = _autoPlayOption.seriesIndex;
+    handleHightlight({ seriesIndex, dataIndex: idx, isShowTip: true });
+  }, [idx]);
 
   const handleLegendHover = (index, seriesIndex) => {
     if (timerRef.current) {
