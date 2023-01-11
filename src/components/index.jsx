@@ -341,10 +341,18 @@ const Pie = (props) => {
     setDataSource(newData);
   };
   const getCenterContent = () => {
-    const idxLength = Object.keys(idx).length;
-    // 始终取最后一个
-    const index = idx[idxLength - 1];
-    const params = getParams({ data, index, color });
+    let seriesIndex = 0;
+    Object.keys(idx).forEach((key) => {
+      const value = idx[key];
+      if (idx[key] !== -1) {
+        seriesIndex = key;
+      }
+    });
+    const params = getParams({
+      data: data[seriesIndex],
+      index: idx[seriesIndex],
+      color,
+    });
     const { content } = centerBlockOption;
     if (!content) return;
     if (typeof content === 'function') {
