@@ -343,13 +343,13 @@ const Pie = (props) => {
   const getCenterContent = () => {
     let seriesIndex = 0;
     Object.keys(idx).forEach((key) => {
-      const value = idx[key];
       if (idx[key] !== -1) {
         seriesIndex = key;
       }
     });
+
     const params = getParams({
-      data: data[seriesIndex],
+      data: dataSource[seriesIndex],
       index: idx[seriesIndex],
       color,
     });
@@ -394,7 +394,9 @@ const Pie = (props) => {
           </>
         );
       })}
-      <CenterBlock {...centerBlockOption}>{getCenterContent()}</CenterBlock>
+      {!!Object.keys(centerBlockOption).length && (
+        <CenterBlock {...centerBlockOption}>{getCenterContent()}</CenterBlock>
+      )}
     </div>
   );
 };

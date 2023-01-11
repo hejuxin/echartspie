@@ -7,10 +7,10 @@ import {
   LabelDemo2,
   // LabelDemo3,
   // // LabelDemo4,
-  // LegendDemo1,
-  // LegendDemo2,
-  // LegendDemo3,
-  // LegendDemo4,
+  LegendDemo1,
+  LegendDemo2,
+  LegendDemo3,
+  LegendDemo4,
   DoughnutDemo1,
   DoughnutDemo2,
   DoubleDemo1,
@@ -35,13 +35,13 @@ export default function App() {
         <LabelDemo1 />
         <LabelDemo2 />
       </div> */}
-      {/* <div>
+      <div>
         <h2>图例自定义</h2>
         <LegendDemo1 />
         <LegendDemo2 />
         <LegendDemo3 />
         <LegendDemo4 />
-      </div> */}
+      </div>
       {/* <div>
         <h2>圆环内圈元素自定义</h2>
         <DoughnutDemo1 />
@@ -53,12 +53,12 @@ export default function App() {
         <AutoDemo1 />
         <AutoDemo2 />
       </div> */}
-      <div>
+      {/* <div>
         <h2>双饼图</h2>
         <DoubleDemo1 />
         <DoubleDemo2 />
         <DoubleDemo3 />
-      </div>
+      </div> */}
 
       {/* <div>
         <h2>label自定义 + legend自定义</h2>
