@@ -16,8 +16,9 @@ import {
   DoubleDemo1,
   DoubleDemo2,
   DoubleDemo3,
-  // AutoDemo1,
-  // AutoDemo2,
+  AutoDemo1,
+  AutoDemo2,
+  AutoDemo3,
   // LabelLegendDemo1,
   // LabelLegendDemo2,
 } from './demo';
@@ -35,24 +36,25 @@ export default function App() {
         <LabelDemo1 />
         <LabelDemo2 />
       </div> */}
-      <div>
+      {/* <div>
         <h2>图例自定义</h2>
         <LegendDemo1 />
         <LegendDemo2 />
         <LegendDemo3 />
         <LegendDemo4 />
-      </div>
+      </div> */}
       {/* <div>
         <h2>圆环内圈元素自定义</h2>
         <DoughnutDemo1 />
         <DoughnutDemo2 />
       </div> */}
-      {/* <div>
+      <div>
         <h2>自动轮播</h2>
         <p>鼠标移上去会暂停，移开会继续</p>
-        <AutoDemo1 />
-        <AutoDemo2 />
-      </div> */}
+        {/* <AutoDemo1 />
+        <AutoDemo2 /> */}
+        <AutoDemo3 />
+      </div>
       {/* <div>
         <h2>双饼图</h2>
         <DoubleDemo1 />
