@@ -53,7 +53,8 @@ const Pie = (props) => {
       }
       return item.show ? item : null;
     });
-    if (dataArr.filter(Boolean).length === 0) return new Array(dataArr.length).fill(-1);
+    if (dataArr.filter(Boolean).length === 0)
+      return new Array(dataArr.length).fill(-1);
     return dataArr;
   }, []);
 
@@ -164,7 +165,7 @@ const Pie = (props) => {
           dataIndex: isNum(dataIndex) ? dataIndex : dataIndex[item],
         };
       }),
-    }
+    };
 
     chartRef.current.dispatchAction({
       type: 'downplay',
@@ -247,7 +248,13 @@ const Pie = (props) => {
 
           idxRef.current[seriesIndex] = dataIndex;
         }
-        handleHightlight({ seriesIndex, dataIndex, isShowTip: true });
+        setIdx((obj) => {
+          return {
+            ...obj,
+            [seriesIndex]: dataIndex,
+          };
+        });
+        // handleHightlight({ seriesIndex, dataIndex, isShowTip: true });
       });
       chartRef.current.on('mouseout', (value) => {
         const { seriesIndex } = value;
@@ -257,6 +264,7 @@ const Pie = (props) => {
             [seriesIndex]: -1,
           };
         });
+
         createInterval();
       });
 
@@ -274,7 +282,6 @@ const Pie = (props) => {
       });
     }
   }, [init]);
-
   useUpdateLayoutEffect(() => {
     const ops = getOps(dataSource);
     chartRef.current.setOption(ops);
@@ -284,8 +291,13 @@ const Pie = (props) => {
 
   useUpdateLayoutEffect(() => {
     if (!autoPlay || !timerRef.current) return;
-    const seriesIndex = _autoPlayOption.seriesIndex;
-    handleHightlight({ seriesIndex, dataIndex: idx, isShowTip: true });
+    handleHightlight({
+      seriesIndex: timerRef.current
+        ? _autoPlayOption.seriesIndex
+        : Object.keys(idx),
+      dataIndex: idx,
+      isShowTip: true,
+    });
   }, [idx]);
 
   const handleLegendHover = (name) => {
@@ -294,14 +306,14 @@ const Pie = (props) => {
     }
 
     const legendObj = {};
-    flatAndUnique(dataSource).forEach(item => {
+    flatAndUnique(dataSource).forEach((item) => {
       const { name, seriesIndex, dataIndex } = item;
       if (!legendObj[name]) {
         legendObj[name] = {};
       }
 
       legendObj[name][seriesIndex] = dataIndex;
-    })
+    });
     const legendItem = legendObj[name];
     handleHightlight({
       seriesIndex: Object.keys(legendItem),
@@ -318,18 +330,19 @@ const Pie = (props) => {
 
   const handleLegendClick = (name) => {
     const newData = [...dataSource];
-    flatAndUnique(dataSource).forEach(item => {
+    flatAndUnique(dataSource).forEach((item) => {
       if (item.name === name) {
         const { seriesIndex, dataIndex } = item;
         const show = newData[seriesIndex][dataIndex].show;
         newData[seriesIndex][dataIndex].show = !show;
       }
-    })
+    });
 
     setDataSource(newData);
   };
   const getCenterContent = () => {
     const idxLength = Object.keys(idx).length;
+    // 始终取最后一个
     const index = idx[idxLength - 1];
     const params = getParams({ data, index, color });
     const { content } = centerBlockOption;

@@ -2,7 +2,7 @@ import React from 'react';
 import { defaultData } from '../components/defaultOption';
 import Pie from '../components';
 
-const DoubleDemo3 = () => {
+const DoubleDemo1 = () => {
   return (
     <div style={{ width: 300, height: 300, position: 'relative' }}>
       <Pie
@@ -11,47 +11,15 @@ const DoubleDemo3 = () => {
           [
             { name: 'test1', value: 5 },
             { name: 'test2', value: 8 },
-            {
-              name: '区域点位',
-              value: 47,
-            },
           ],
         ]}
         radius={{
           0: ['40%', '70%'],
-          1: ['0', '30%'],
+          1: ['35%', '40%'],
         }}
         legendOption={{
           bottom: 0,
-          right: -100,
           icon: 'circle',
-          orient: 'vertical',
-          content: (params) => {
-            return (
-              <div
-                style={{ fontSize: 12, display: 'flex', alignItems: 'center' }}
-              >
-                <div>
-                  <div
-                    className="legend-icon"
-                    style={{
-                      width: 10,
-                      height: 10,
-                      borderRadius: '50%',
-                      background: params.color,
-                      marginRight: 5,
-                    }}
-                  ></div>
-                </div>
-                <div>
-                  <div style={{ fontSize: 14 }}>{params.name}</div>
-                  <div>
-                    {params.value} {`${params.percent?.toFixed(2)}%`}
-                  </div>
-                </div>
-              </div>
-            );
-          },
         }}
         seriesOption={[
           {
@@ -80,14 +48,7 @@ const DoubleDemo3 = () => {
                 );
               },
             },
-            emphasis: {
-              // label: {
-              //   // show: true,
-              //   formatter: (params) => {
-              //     return `${params.percent}%`;
-              //   },
-              // },
-            },
+            emphasis: {},
             tooltip: {
               show: false,
             },
@@ -103,9 +64,30 @@ const DoubleDemo3 = () => {
           },
         ]}
         // autoPlay
+        centerBlockOption={{
+          margin: 5,
+          padding: 5,
+          border: '1px solid #000',
+          radius: '30%',
+          backgroundColor: '#DBDFF1',
+          content: (params) => {
+            return (
+              <div
+                style={{
+                  position: 'absolute',
+                  left: '50%',
+                  top: '50%',
+                  transform: 'translate(-50%, -50%)',
+                }}
+              >
+                {params.name}
+              </div>
+            );
+          },
+        }}
       />
     </div>
   );
 };
 
-export default DoubleDemo3;
+export default DoubleDemo1;
