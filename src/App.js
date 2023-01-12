@@ -5,8 +5,6 @@ import {
   TooltipDemo2,
   LabelDemo1,
   LabelDemo2,
-  // LabelDemo3,
-  // // LabelDemo4,
   LegendDemo1,
   LegendDemo2,
   LegendDemo3,
@@ -19,18 +17,16 @@ import {
   AutoDemo1,
   AutoDemo2,
   AutoDemo3,
-  // LabelLegendDemo1,
-  // LabelLegendDemo2,
 } from './demo';
 
 export default function App() {
   return (
     <React.Fragment>
-      {/* <div>
+      <div>
         <h2>tooltip自定义</h2>
         <TooltipDemo1 />
         <TooltipDemo2 />
-      </div> */}
+      </div>
       {/* <div>
         <h2>label自定义</h2>
         <LabelDemo1 />
@@ -48,24 +44,18 @@ export default function App() {
         <DoughnutDemo1 />
         <DoughnutDemo2 />
       </div> */}
-      <div>
+      {/* <div>
         <h2>自动轮播</h2>
         <p>鼠标移上去会暂停，移开会继续</p>
-        {/* <AutoDemo1 />
-        <AutoDemo2 /> */}
+        <AutoDemo1 />
+        <AutoDemo2 />
         <AutoDemo3 />
-      </div>
+      </div> */}
       {/* <div>
         <h2>双饼图</h2>
         <DoubleDemo1 />
         <DoubleDemo2 />
         <DoubleDemo3 />
-      </div> */}
-
-      {/* <div>
-        <h2>label自定义 + legend自定义</h2>
-        <LabelLegendDemo1 />
-        <LabelLegendDemo2 />
       </div> */}
     </React.Fragment>
   );
