@@ -1,12 +1,14 @@
+import React from 'react';
 import defaultOption, { defaultColor } from './components/defaultOption';
-import ReactDOM from 'react-dom/client';
+// import ReactDOM from 'react-dom/client';
+import { createRoot } from 'react-dom/client';
 
 export const formatterLegend = ({
   option = {},
   data = [],
   color = defaultColor,
   seriesIndexArr = [],
-}) => {
+} = {}) => {
   const legend = {
     ...defaultOption.legend,
     ...option,
@@ -96,6 +98,7 @@ export const flatAndUnique = (arr = []) => {
 export const formatterTooltip = (option = {}) => {
   const { content = '' } = option;
   const dom = document.createElement('div');
+  const root = createRoot(dom);
   if (!content) {
     return {
       ...defaultOption.tooltip,
@@ -112,7 +115,7 @@ export const formatterTooltip = (option = {}) => {
         if (typeof res === 'string') {
           return content(params);
         }
-        ReactDOM.createRoot(dom).render(res);
+        root.render(res);
         return dom;
       }
 
@@ -140,7 +143,7 @@ export const getParams = ({
   index = 0,
   color = defaultColor,
   colorIndex,
-}) => {
+} = {}) => {
   const item = data[index] || {};
 
   let totalBySeriersIndex = {};
