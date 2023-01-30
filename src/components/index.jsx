@@ -20,6 +20,7 @@ import {
   getParams,
   isNum,
 } from '../utils';
+import { useAutoParams } from '../hooks';
 import LabelBlock from './LabelBlock';
 import LegendBlock from './LegendBlock';
 import CenterBlock from './CenterBlock';
@@ -41,8 +42,7 @@ const Pie = (props) => {
   const chartRef = useRef();
   const timerRef = useRef();
   const [init, setInit] = useState(false);
-  const [idx, setIdx] = useState({});
-  const idxRef = useRef();
+  const autoParams = useAutoParams();
   const [dataSource, setDataSource] = useState([]);
   const [labelPos, setLabelPos] = useState({});
   const [radiusSource, setRadiusSource] = useState([]);
@@ -141,18 +141,23 @@ const Pie = (props) => {
     }
     if (!autoPlay) return;
     timerRef.current = setInterval(() => {
-      Object.keys(idxRef.current).forEach((key) => {
+      const current = autoParams.getCurrent();
+      Object.keys(current).forEach((key) => {
         const data = (dataSource[key] || []).filter((item) => item.show);
-        if (idxRef.current[key] >= data.length - 1) {
-          idxRef.current[key] = 0;
+        if (current[key] >= data.length - 1) {
+          autoParams.setCurrent({
+            ...current,
+            [key]: 0,
+          });
         } else {
-          idxRef.current[key] += 1;
+          autoParams.setCurrent({
+            ...current,
+            [key]: current[key] + 1,
+          });
         }
       });
 
-      setIdx({
-        ...idxRef.current,
-      });
+      autoParams.alernate();
     }, _autoPlayOption.time);
   };
 
@@ -193,7 +198,7 @@ const Pie = (props) => {
   const handleInit = () => {
     const radiusArr = [];
     const dataArr = [];
-    const idxObj = {};
+    const autoInfo = {};
     const labelObj = {};
     if (radius) {
       if (
@@ -203,7 +208,7 @@ const Pie = (props) => {
       ) {
         radiusArr[0] = radius;
         dataArr[0] = data;
-        idxObj[0] = -1;
+        autoInfo[0] = -1;
         labelObj[0] = [];
       } else if (typeof radius === 'object') {
         Object.keys(radius).forEach((key) => {
@@ -211,7 +216,7 @@ const Pie = (props) => {
           radiusArr[key] = radius[key];
           dataArr[key] = dataItem;
           // dataArr[key] = Array.isArray(dataItem) ? dataItem : data;
-          idxObj[key] = -1;
+          autoInfo[key] = -1;
           labelObj[key] = [];
         });
       }
@@ -219,8 +224,7 @@ const Pie = (props) => {
     setDataSource(formatterData(dataArr));
     setRadiusSource(radiusArr);
 
-    setIdx(idxObj);
-    idxRef.current = idxObj;
+    autoParams.init(autoInfo);
     setLabelPos(labelObj);
 
     setInit(true);
@@ -246,9 +250,13 @@ const Pie = (props) => {
         if (timerRef.current) {
           clearInterval(timerRef.current);
 
-          idxRef.current[seriesIndex] = dataIndex;
+          const current = autoParams.getCurrent();
+          autoParams.setCurrent({
+            ...current,
+            [seriesIndex]: dataIndex,
+          });
         }
-        setIdx((obj) => {
+        autoParams.setAutoIdx((obj) => {
           return {
             ...obj,
             [seriesIndex]: dataIndex,
@@ -258,7 +266,7 @@ const Pie = (props) => {
       });
       chartRef.current.on('mouseout', (value) => {
         const { seriesIndex } = value;
-        setIdx((obj) => {
+        autoParams.setAutoIdx((obj) => {
           return {
             ...obj,
             [seriesIndex]: -1,
@@ -294,11 +302,11 @@ const Pie = (props) => {
     handleHightlight({
       seriesIndex: timerRef.current
         ? _autoPlayOption.seriesIndex
-        : Object.keys(idx),
-      dataIndex: idx,
+        : Object.keys(autoParams.autoIdx),
+      dataIndex: autoParams.autoIdx,
       isShowTip: true,
     });
-  }, [idx]);
+  }, [autoParams.autoIdx]);
 
   const handleLegendHover = (name) => {
     if (timerRef.current) {
@@ -342,15 +350,16 @@ const Pie = (props) => {
   };
   const getCenterContent = () => {
     let seriesIndex = 0;
-    Object.keys(idx).forEach((key) => {
-      if (idx[key] !== -1) {
+    const idxObj = autoParams.autoIdx;
+    Object.keys(idxObj).forEach((key) => {
+      if (idxObj[key] !== -1) {
         seriesIndex = key;
       }
     });
 
     const params = getParams({
       data: dataSource[seriesIndex],
-      index: idx[seriesIndex],
+      index: idxObj[seriesIndex],
       color,
     });
     const { content } = centerBlockOption;
@@ -386,7 +395,7 @@ const Pie = (props) => {
           <>
             <LabelBlock
               option={series[key]}
-              hightlightIndex={idx[key]}
+              hightlightIndex={autoParams.autoIdx[key]}
               data={dataSource[key]}
               labelPos={labelPos[key]}
               key={key}
