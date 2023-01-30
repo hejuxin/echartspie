@@ -40,7 +40,6 @@ const Pie = (props) => {
   } = props;
   const domRef = useRef();
   const chartRef = useRef();
-  const timerRef = useRef();
   const [init, setInit] = useState(false);
   const autoParams = useAutoParams();
   const [dataSource, setDataSource] = useState([]);
@@ -132,33 +131,15 @@ const Pie = (props) => {
     return {
       ...defaultAutoOption,
       ...autoPlayOption,
+      enable: autoPlay || false,
     };
-  }, [autoPlayOption]);
+  }, [autoPlay, autoPlayOption]);
 
   const createInterval = () => {
-    if (timerRef.current) {
-      clearInterval(timerRef.current);
-    }
-    if (!autoPlay) return;
-    timerRef.current = setInterval(() => {
-      const current = autoParams.getCurrent();
-      Object.keys(current).forEach((key) => {
-        const data = (dataSource[key] || []).filter((item) => item.show);
-        if (current[key] >= data.length - 1) {
-          autoParams.setCurrent({
-            ...current,
-            [key]: 0,
-          });
-        } else {
-          autoParams.setCurrent({
-            ...current,
-            [key]: current[key] + 1,
-          });
-        }
-      });
-
-      autoParams.alernate();
-    }, _autoPlayOption.time);
+    autoParams.createInterval({
+      ..._autoPlayOption,
+      dataSource,
+    });
   };
 
   const handleHightlight = ({ seriesIndex, dataIndex, isShowTip = false }) => {
@@ -236,9 +217,7 @@ const Pie = (props) => {
     handleInit();
 
     return () => {
-      if (timerRef.current) {
-        clearInterval(timerRef.current);
-      }
+      autoParams.removeInterval();
     };
   }, []);
 
@@ -247,16 +226,15 @@ const Pie = (props) => {
       chartRef.current.on('mouseover', (value) => {
         const { seriesIndex, dataIndex } = value;
 
-        if (timerRef.current) {
-          clearInterval(timerRef.current);
-
-          const current = autoParams.getCurrent();
-          autoParams.setCurrent({
+        autoParams.removeInterval(() => {
+          const current = autoParams.getWip();
+          autoParams.setWip({
             ...current,
             [seriesIndex]: dataIndex,
           });
-        }
-        autoParams.setAutoIdx((obj) => {
+        });
+
+        autoParams.setAutoCurrent((obj) => {
           return {
             ...obj,
             [seriesIndex]: dataIndex,
@@ -266,7 +244,7 @@ const Pie = (props) => {
       });
       chartRef.current.on('mouseout', (value) => {
         const { seriesIndex } = value;
-        autoParams.setAutoIdx((obj) => {
+        autoParams.setAutoCurrent((obj) => {
           return {
             ...obj,
             [seriesIndex]: -1,
@@ -290,28 +268,26 @@ const Pie = (props) => {
       });
     }
   }, [init]);
+  
   useUpdateLayoutEffect(() => {
     const ops = getOps(dataSource);
     chartRef.current.setOption(ops);
-    // clearInterval(timerRef.current);
     createInterval();
   }, [dataSource]);
 
   useUpdateLayoutEffect(() => {
-    if (!autoPlay || !timerRef.current) return;
+    if (!_autoPlayOption.enable || !autoParams.autoIdx) return;
     handleHightlight({
-      seriesIndex: timerRef.current
+      seriesIndex: autoParams.autoIdx
         ? _autoPlayOption.seriesIndex
-        : Object.keys(autoParams.autoIdx),
-      dataIndex: autoParams.autoIdx,
+        : Object.keys(autoParams.autoCurrent),
+      dataIndex: autoParams.autoCurrent,
       isShowTip: true,
     });
-  }, [autoParams.autoIdx]);
+  }, [autoParams.autoCurrent]);
 
   const handleLegendHover = (name) => {
-    if (timerRef.current) {
-      clearInterval(timerRef.current);
-    }
+    autoParams.removeInterval();
 
     const legendObj = {};
     flatAndUnique(dataSource).forEach((item) => {
@@ -350,7 +326,7 @@ const Pie = (props) => {
   };
   const getCenterContent = () => {
     let seriesIndex = 0;
-    const idxObj = autoParams.autoIdx;
+    const idxObj = autoParams.autoCurrent;
     Object.keys(idxObj).forEach((key) => {
       if (idxObj[key] !== -1) {
         seriesIndex = key;
@@ -395,7 +371,7 @@ const Pie = (props) => {
           <>
             <LabelBlock
               option={series[key]}
-              hightlightIndex={autoParams.autoIdx[key]}
+              hightlightIndex={autoParams.autoCurrent[key]}
               data={dataSource[key]}
               labelPos={labelPos[key]}
               key={key}
