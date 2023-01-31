@@ -9,7 +9,8 @@
     "ahooks": "^3.7.4",
     "echarts": "^5.4.1",
     "react": "^18.1.0",
-    "react-dom": "^18.1.0"
+    "react-dom": "^18.1.0",
+    "react-router-dom": "^6.8.0"
   },
   "scripts": {
     "start": "react-scripts start",
