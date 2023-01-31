@@ -6,11 +6,11 @@ import router from './router';
 export default function App() {
   return (
     <React.Fragment>
-      <ul>
+      <ul className="nav-list">
         {router[0].children.map((item) => {
           const key = item.path.substring(1);
           return (
-            <li key={key}>
+            <li key={key} className="nav-item">
               <Link to={item.path}>{key}</Link>
             </li>
           );
