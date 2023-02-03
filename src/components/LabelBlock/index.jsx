@@ -34,10 +34,10 @@ const LabelBlock = (props) => {
               left: endPos?.[0],
               top: endPos?.[1],
               transform: `translate(${isLeft ? '-100%' : 0}, -50%)`,
-              maxWidth: endPos?.[0],
+              maxWidth: isLeft ? endPos?.[0] : 'auto',
             }}
             key={`label_${item.name}`}
-            className='label-item'
+            className="label-item"
           >
             {activeLabel?.content
               ? isActive
