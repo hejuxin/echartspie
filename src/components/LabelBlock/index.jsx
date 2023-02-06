@@ -12,18 +12,6 @@ const LabelBlock = (props) => {
     distanceToLabelLine,
   } = props;
 
-  // const getStyle = () => {
-  //   let textAlign = 'left';
-  //   let transformX = 0;
-  //   let transformY = '-50%';
-  //   let maxWidth = 'auto';
-  //   return {
-  //     textAlign,
-  //     transformX,
-  //     transformY,
-  //     maxWidth,
-  //   };
-  // };
   return (
     <>
       {data.map((item, index) => {
@@ -36,6 +24,7 @@ const LabelBlock = (props) => {
         const endPos = posItem?.[endIndex] || [];
         const startPosX = startPos?.[0];
         const endPosX = endPos?.[0];
+        const endPosY = endPos?.[1];
         let isLeft = true;
         if (isNum(startPosX) && isNum(endPosX)) {
           isLeft = startPosX - endPosX > 0;
@@ -119,7 +108,7 @@ const LabelBlock = (props) => {
           <div
             style={{
               left,
-              top: endPos?.[1],
+              top: endPosY,
               transform: `translate(${transformX}, ${transformY})`,
               maxWidth,
               textAlign,
