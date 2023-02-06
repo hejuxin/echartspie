@@ -43,11 +43,6 @@ const LabelBlock = (props) => {
 
         const isActive = hightlightIndex === index;
 
-        // const activeLabel = item.emphasis?.label
-        //   ? item.emphasis?.label
-        //   : option?.emphasis?.label;
-        // const normalLabel = item.label ? item.label : option?.label;
-
         const activeLabel = {
           ...option?.active,
           ...item.emphasis?.label,
@@ -80,17 +75,6 @@ const LabelBlock = (props) => {
         let distance = 0;
         if (mode === 'insideLine') {
           distance = isNum(distanceToLabelLine) ? distanceToLabelLine : 0;
-          if (isLeft) {
-            textAlign = 'left';
-            transformX = `calc(${distance}px)`;
-
-            left = endPosX > 0 ? endPosX : 0;
-          } else {
-            textAlign = 'right';
-            transformX = `calc(-100% + ${distance}px)`;
-
-            left = endPosX > chartsWidth ? chartsWidth : endPosX;
-          }
 
           const lineLength2 =
             labelPos.length >= 2
@@ -99,6 +83,25 @@ const LabelBlock = (props) => {
 
           // 先取正，再进行计算
           maxWidth = Math.abs(lineLength2) - distance;
+
+          if (isLeft) {
+            textAlign = 'left';
+            transformX = `calc(${distance}px)`;
+
+            left = endPosX > 0 ? endPosX : 0;
+          } else {
+            textAlign = 'right';
+
+            // 关于distance偏移，在右边往左偏时是减去
+            if (endPosX > chartsWidth) {
+              // 超出右边边界，此时left取最大值时width会存在问题。使用left先取charts宽度 - line长度，在transform时再进行回正
+              left = chartsWidth - lineLength2;
+              transformX = `calc(-100% + ${lineLength2}px - ${distance}px)`;
+            } else {
+              left = endPosX;
+              transformX = `calc(-100% - ${distance}px)`;
+            }
+          }
         } else if (mode === 'outsideLine') {
           distance = isNum(distanceToLabelLine) ? distanceToLabelLine : 5;
           if (isLeft) {
