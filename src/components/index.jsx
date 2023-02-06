@@ -109,6 +109,9 @@ const Pie = (props) => {
               });
             }, 0);
           },
+          labelLine: {
+            length2: 50,
+          },
         };
 
         if (radiusItem) {
@@ -122,6 +125,15 @@ const Pie = (props) => {
           };
         }
 
+        const labelLineExtendLength = label.lineExtendLength;
+        if (label.isLineExtend && isNum(labelLineExtendLength)) {
+          series.labelLine = {
+            ...series.labelLine,
+            length2: labelLineExtendLength,
+          };
+        }
+
+        console.log(series, 'series', labelLineExtendLength);
         return series;
       }),
     };
@@ -268,7 +280,7 @@ const Pie = (props) => {
       });
     }
   }, [init]);
-  
+
   useUpdateLayoutEffect(() => {
     const ops = getOps(dataSource);
     chartRef.current.setOption(ops);
@@ -375,6 +387,7 @@ const Pie = (props) => {
               data={dataSource[key]}
               labelPos={labelPos[key]}
               key={key}
+              chartsWidth={chartRef.current.getWidth()}
             />
           </>
         );

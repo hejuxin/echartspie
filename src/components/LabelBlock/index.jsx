@@ -3,7 +3,7 @@ import { getParams } from '../../utils';
 import './index.css';
 
 const LabelBlock = (props) => {
-  const { data, labelPos, option, hightlightIndex } = props;
+  const { data, labelPos, option, hightlightIndex, chartsWidth } = props;
   return (
     <>
       {data.map((item, index) => {
@@ -34,7 +34,9 @@ const LabelBlock = (props) => {
               left: endPos?.[0],
               top: endPos?.[1],
               transform: `translate(${isLeft ? '-100%' : 0}, -50%)`,
-              maxWidth: isLeft ? endPos?.[0] : 'auto',
+              maxWidth:
+                (isLeft ? endPos?.[0] : chartsWidth - endPos?.[0]) || 'auto',
+              textAlign: isLeft ? 'left' : 'right',
             }}
             key={`label_${item.name}`}
             className="label-item"

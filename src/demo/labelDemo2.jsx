@@ -27,13 +27,13 @@ const LabelDemo2 = () => {
               return (
                 <div>
                   <div>{params.name}</div>
-                  <div
+                  {/* <div
                     style={{
                       width: '100%',
                       height: 1,
                       background: params.color,
                     }}
-                  ></div>
+                  ></div> */}
                   <div>
                     {params.value}个 {params.percent?.toFixed(2)}
                   </div>
@@ -41,6 +41,8 @@ const LabelDemo2 = () => {
               );
             },
             overflow: 'none',
+            isLineExtend: true,
+            lineExtendLength: 10,
           },
           labelLine: {
             // show: false,
