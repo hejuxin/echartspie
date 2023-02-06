@@ -80,14 +80,13 @@ const LabelBlock = (props) => {
             left = endPosX > 0 ? endPosX : 0;
           } else {
             textAlign = 'right';
-            console.log(item.name, endPosX, 'endPosX');
-
             // 关于distance偏移，在右边往左偏时是减去
             if (endPosX > chartsWidth) {
               // 超出右边边界，此时left取最大值时width会存在问题。使用left先取charts宽度 - line长度，在transform时再进行回正
               left = chartsWidth - lineLength2;
               transformX = `calc(-100% + ${lineLength2}px - ${distance}px)`;
             } else {
+              // 没超出右边边界时，此时left取最大值时width会可能存在问题
               left = endPosX - lineLength2;
               transformX = `calc(-100% + ${lineLength2}px - ${distance}px)`;
             }
