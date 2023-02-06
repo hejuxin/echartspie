@@ -40,6 +40,7 @@ const Pie = (props) => {
   } = props;
   const domRef = useRef();
   const chartRef = useRef();
+  const chartOption = useRef({});
   const [init, setInit] = useState(false);
   const autoParams = useAutoParams();
   const [dataSource, setDataSource] = useState([]);
@@ -282,6 +283,7 @@ const Pie = (props) => {
 
   useUpdateLayoutEffect(() => {
     const ops = getOps(dataSource);
+    chartOption.current = ops;
     chartRef.current.setOption(ops);
     createInterval();
   }, [dataSource]);
@@ -367,9 +369,9 @@ const Pie = (props) => {
       }}
     >
       <div ref={domRef} style={{ width: '100%', height: '100%' }}></div>
-      {getOps(dataSource).legend?.show === false && (
+      {chartOption.current.legend?.show === false && (
         <LegendBlock
-          option={getOps(dataSource).legend}
+          option={chartOption.current.legend}
           data={flatAndUnique(dataSource)}
           handleLegendHover={handleLegendHover}
           handleLegendLeave={handleLegendLeave}
@@ -377,11 +379,21 @@ const Pie = (props) => {
         />
       )}
       {Object.keys(labelPos).map((key) => {
-        const { series } = getOps(dataSource);
+        if (!Object.keys(chartOption.current).length) return;
+        const { series } = chartOption.current;
+        const seriesItem = series[key];
+        const labelOption = {
+          normal: {
+            ...seriesItem.label,
+          },
+          active: {
+            ...seriesItem.emphasis?.label,
+          },
+        };
         return (
           <>
             <LabelBlock
-              option={series[key]}
+              option={labelOption}
               hightlightIndex={autoParams.autoCurrent[key]}
               data={dataSource[key]}
               labelPos={labelPos[key]}

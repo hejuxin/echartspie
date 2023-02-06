@@ -11,8 +11,6 @@ const LabelBlock = (props) => {
     chartsWidth,
     distanceToLabelLine,
   } = props;
-  const label = option.label;
-  const mode = label.mode || 'outsideLine';
 
   // const getStyle = () => {
   //   let textAlign = 'left';
@@ -51,13 +49,27 @@ const LabelBlock = (props) => {
         // const normalLabel = item.label ? item.label : option?.label;
 
         const activeLabel = {
-          ...option?.emphasis?.label,
+          ...option?.active,
           ...item.emphasis?.label,
         };
         const normalLabel = {
-          ...option?.label,
+          ...option?.normal,
           ...item.label,
         };
+
+        let isShowActive = false;
+        if (isActive) {
+          if (activeLabel?.content) {
+            isShowActive = true;
+          } else {
+            isShowActive = false;
+          }
+        } else {
+          isShowActive = false;
+        }
+
+        let mode =
+          (isShowActive ? activeLabel.mode : normalLabel.mode) || 'outsideLine';
 
         let textAlign = 'left';
         let transformX = 0;
@@ -112,11 +124,9 @@ const LabelBlock = (props) => {
             key={`label_${item.name}`}
             className="label-item"
           >
-            {activeLabel?.content
-              ? isActive
-                ? activeLabel.content(params)
-                : normalLabel.content && normalLabel.content(params)
-              : normalLabel.content && normalLabel.content(params)}
+            {isShowActive
+              ? activeLabel?.content(params)
+              : normalLabel?.content(params)}
           </div>
         );
       })}
