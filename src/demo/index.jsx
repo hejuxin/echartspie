@@ -4,6 +4,7 @@ import TooltipDemo2 from './tooltipDemo2';
 import LabelDemo1 from './labelDemo1';
 import LabelDemo2 from './labelDemo2';
 import LabelDemo3 from './labelDemo3';
+import LabelDemo4 from './labelDemo4';
 
 import LegendDemo1 from './legendDemo1';
 import LegendDemo2 from './legendDemo2';
@@ -27,6 +28,7 @@ export {
   LabelDemo1,
   LabelDemo2,
   LabelDemo3,
+  LabelDemo4,
   LegendDemo1,
   LegendDemo2,
   LegendDemo3,

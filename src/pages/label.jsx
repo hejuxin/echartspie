@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { LabelDemo1, LabelDemo2, LabelDemo3 } from '../demo';
+import { LabelDemo1, LabelDemo2, LabelDemo3, LabelDemo4 } from '../demo';
 
 export default function App() {
   return (
@@ -8,6 +8,7 @@ export default function App() {
       {/* <LabelDemo1 /> */}
       <LabelDemo2 />
       {/* <LabelDemo3 /> */}
+      <LabelDemo4 />
     </React.Fragment>
   );
 }
