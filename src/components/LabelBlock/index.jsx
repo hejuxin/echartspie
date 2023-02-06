@@ -80,6 +80,7 @@ const LabelBlock = (props) => {
             left = endPosX > 0 ? endPosX : 0;
           } else {
             textAlign = 'right';
+            console.log(item.name, endPosX, 'endPosX');
 
             // 关于distance偏移，在右边往左偏时是减去
             if (endPosX > chartsWidth) {
@@ -87,8 +88,8 @@ const LabelBlock = (props) => {
               left = chartsWidth - lineLength2;
               transformX = `calc(-100% + ${lineLength2}px - ${distance}px)`;
             } else {
-              left = endPosX;
-              transformX = `calc(-100% - ${distance}px)`;
+              left = endPosX - lineLength2;
+              transformX = `calc(-100% + ${lineLength2}px - ${distance}px)`;
             }
           }
         } else if (mode === 'outsideLine') {
