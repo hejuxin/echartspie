@@ -7,18 +7,18 @@ const LabelBlock = (props) => {
   const label = option.label;
   const mode = label.mode || 'outsideLine';
 
-  const getStyle = () => {
-    let textAlign = 'left';
-    let transformX = 0;
-    let transformY = '-50%';
-    let maxWidth = 'auto';
-    return {
-      textAlign,
-      transformX,
-      transformY,
-      maxWidth,
-    };
-  };
+  // const getStyle = () => {
+  //   let textAlign = 'left';
+  //   let transformX = 0;
+  //   let transformY = '-50%';
+  //   let maxWidth = 'auto';
+  //   return {
+  //     textAlign,
+  //     transformX,
+  //     transformY,
+  //     maxWidth,
+  //   };
+  // };
   return (
     <>
       {data.map((item, index) => {
@@ -52,13 +52,18 @@ const LabelBlock = (props) => {
         let transformX = 0;
         let transformY = '-50%';
         let maxWidth = 'auto';
+        let left = endPosX;
         if (mode === 'insideLine') {
           if (isLeft) {
             textAlign = 'left';
             transformX = 0;
+
+            left = endPosX > 0 ? endPosX : 0;
           } else {
             textAlign = 'right';
             transformX = '-100%';
+
+            left = endPosX > chartsWidth ? chartsWidth : endPosX;
           }
 
           const lineLength2 =
@@ -80,7 +85,7 @@ const LabelBlock = (props) => {
         return (
           <div
             style={{
-              left: endPosX > 0 ? endPosX : 0,
+              left,
               top: endPos?.[1],
               transform: `translate(${transformX}, ${transformY})`,
               maxWidth,
