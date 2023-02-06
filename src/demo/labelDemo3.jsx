@@ -25,11 +25,17 @@ const LabelDemo3 = () => {
             show: true,
             content: (params) => {
               return (
-                <div>
+                <div
+                  style={{
+                    display: 'flex',
+                    maxWidth: '100%',
+                    overflow: 'hidden',
+                    fontSize: 12,
+                  }}
+                >
                   <div>{params.name}</div>
-                  <div>
-                    {params.value}个 {params.percent?.toFixed(2)}
-                  </div>
+                  <div>{params.value}个</div>
+                  <div>{params.percent?.toFixed(2)}</div>
                 </div>
               );
             },

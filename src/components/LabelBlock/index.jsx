@@ -54,6 +54,7 @@ const LabelBlock = (props) => {
 
         let mode =
           (isShowActive ? activeLabel.mode : normalLabel.mode) || 'outsideLine';
+        console.log(mode);
 
         let textAlign = 'left';
         let transformX = 0;
@@ -94,10 +95,11 @@ const LabelBlock = (props) => {
         } else if (mode === 'outsideLine') {
           distance = isNum(distanceToLabelLine) ? distanceToLabelLine : 5;
           if (isLeft) {
-            transformX = '-100%';
+            // transformX = '-100%';
+            transformX = `calc(-100% - ${distance}px)`;
             maxWidth = endPosX;
           } else {
-            transformX = 0;
+            transformX = `calc(${distance}px)`;
             maxWidth = chartsWidth - endPosX;
           }
 

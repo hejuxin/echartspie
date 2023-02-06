@@ -7,7 +7,7 @@ export default function App() {
       <h2>label自定义</h2>
       {/* <LabelDemo1 /> */}
       <LabelDemo2 />
-      {/* <LabelDemo3 /> */}
+      <LabelDemo3 />
       <LabelDemo4 />
     </React.Fragment>
   );
