@@ -4,14 +4,33 @@ import './index.css';
 
 const LabelBlock = (props) => {
   const { data, labelPos, option, hightlightIndex, chartsWidth } = props;
+  const label = option.label;
+  const mode = label.mode || 'outsideLine';
+
+  const getStyle = () => {
+    let textAlign = 'left';
+    let transformX = 0;
+    let transformY = '-50%';
+    let maxWidth = 'auto';
+    return {
+      textAlign,
+      transformX,
+      transformY,
+      maxWidth,
+    };
+  };
   return (
     <>
       {data.map((item, index) => {
         if (!item.show) return <></>;
         const params = getParams({ data, index });
-        const startPos = labelPos[index]?.[0] || [];
-        const endPos = labelPos[index]?.[labelPos.length - 1 || 0] || [];
-        const isLeft = startPos[0] - endPos[0] > 0;
+
+        const posItem = labelPos[index];
+        const startPos = posItem?.[0] || [];
+        const endIndex = labelPos.length > 1 ? labelPos.length - 1 : 0;
+        const endPos = posItem?.[endIndex] || [];
+        const endPosX = endPos?.[0];
+        const isLeft = startPos[0] - endPosX > 0;
 
         const isActive = hightlightIndex === index;
 
@@ -28,15 +47,44 @@ const LabelBlock = (props) => {
           ...option?.label,
           ...item.label,
         };
+
+        let textAlign = 'left';
+        let transformX = 0;
+        let transformY = '-50%';
+        let maxWidth = 'auto';
+        if (mode === 'insideLine') {
+          if (isLeft) {
+            textAlign = 'left';
+            transformX = 0;
+          } else {
+            textAlign = 'right';
+            transformX = '-100%';
+          }
+
+          const lineLength2 =
+            labelPos.length >= 2
+              ? endPos[0] - posItem[labelPos.length - 2]?.[0]
+              : 0;
+
+          maxWidth = Math.abs(lineLength2);
+        } else if (mode === 'outsideLine') {
+          if (isLeft) {
+            transformX = '-100%';
+            maxWidth = endPosX;
+          } else {
+            transformX = 0;
+            maxWidth = chartsWidth - endPosX;
+          }
+        }
+
         return (
           <div
             style={{
-              left: endPos?.[0],
+              left: endPosX > 0 ? endPosX : 0,
               top: endPos?.[1],
-              transform: `translate(${isLeft ? '-100%' : 0}, -50%)`,
-              maxWidth:
-                (isLeft ? endPos?.[0] : chartsWidth - endPos?.[0]) || 'auto',
-              textAlign: isLeft ? 'left' : 'right',
+              transform: `translate(${transformX}, ${transformY})`,
+              maxWidth,
+              textAlign,
             }}
             key={`label_${item.name}`}
             className="label-item"

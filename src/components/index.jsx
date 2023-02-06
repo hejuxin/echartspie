@@ -133,7 +133,6 @@ const Pie = (props) => {
           };
         }
 
-        console.log(series, 'series', labelLineExtendLength);
         return series;
       }),
     };

@@ -42,7 +42,8 @@ const LabelDemo2 = () => {
             },
             overflow: 'none',
             isLineExtend: true,
-            lineExtendLength: 10,
+            lineExtendLength: 100,
+            mode: 'insideLine',
           },
           labelLine: {
             // show: false,
