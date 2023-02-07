@@ -57,7 +57,7 @@ const Pie = (props) => {
       return new Array(dataArr.length).fill(-1);
     return dataArr;
   }, []);
-
+  console.log(chartOption.current);
   const getOps = (data = []) => {
     let isLegendCustom = false;
     if (legendOption.content) {

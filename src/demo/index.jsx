@@ -1,5 +1,6 @@
 import TooltipDemo1 from './tooltipDemo1';
 import TooltipDemo2 from './tooltipDemo2';
+import TooltipDemo3 from './tooltipDemo3';
 
 import LabelDemo1 from './labelDemo1';
 import LabelDemo2 from './labelDemo2';
@@ -25,6 +26,7 @@ import AutoDemo3 from './autoDemo3';
 export {
   TooltipDemo1,
   TooltipDemo2,
+  TooltipDemo3,
   LabelDemo1,
   LabelDemo2,
   LabelDemo3,

@@ -67,7 +67,6 @@ const LabelBlock = (props) => {
 
         let mode =
           (isShowActive ? activeLabel.mode : normalLabel.mode) || 'outsideLine';
-        console.log(mode);
 
         let textAlign = 'left';
         let transformX = 0;

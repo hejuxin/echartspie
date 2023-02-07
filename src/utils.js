@@ -95,18 +95,45 @@ export const flatAndUnique = (arr = []) => {
   return [...map.keys()];
 };
 
+const getTooltipPosition = (position, ...args) => {
+  if (typeof position === 'string') {
+    return position;
+  } else if (typeof position === 'function') {
+    return position(...args);
+  } else if (Array.isArray(position)) {
+    return position;
+  } else if (typeof position === 'object') {
+    const { mode, x, y } = position;
+    console.log(mode, 'ddd');
+    // return () => {
+    //   if (!mode || mode !== 'fixed') return null;
+    //   return [x || 0, y || 0];
+    // };
+    return null;
+  }
+};
+
 export const formatterTooltip = (option = {}) => {
-  const { content = '' } = option;
+  const { content = '', position } = option;
   const dom = document.createElement('div');
   const root = createRoot(dom);
+
   if (!content) {
-    return {
+    const res = {
       ...defaultOption.tooltip,
       ...option,
     };
+
+    if (position) {
+      res.position = (point, params, dom, rect, size) => {
+        return getTooltipPosition(position, [point, params, dom, rect, size]);
+      };
+    }
+    console.log(res, 'res');
+    return res;
   }
 
-  return {
+  const res = {
     ...defaultOption.tooltip,
     ...option,
     formatter: (params, ticket, callback) => {
@@ -122,6 +149,14 @@ export const formatterTooltip = (option = {}) => {
       return content;
     },
   };
+  if (position) {
+    res.position = (point, params, dom, rect, size) => {
+      return null;
+    };
+  }
+  console.log(res, 'res');
+
+  return res;
 };
 
 export const formatterData = (data = [], seriesIndex = 0) => {
