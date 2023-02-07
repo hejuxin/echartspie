@@ -39,7 +39,6 @@ const LabelDemo3 = () => {
                 </div>
               );
             },
-            overflow: 'none',
           },
           labelLine: {
             // show: false,
