@@ -41,15 +41,28 @@ const LabelBlock = (props) => {
           ...item.label,
         };
 
+        let isShowLabel = true;
         let isShowActive = false;
         if (isActive) {
-          if (activeLabel?.content) {
+          if (activeLabel?.show && activeLabel?.content) {
             isShowActive = true;
           } else {
             isShowActive = false;
+
+            if (normalLabel?.show) {
+              isShowLabel = true;
+            } else {
+              isShowLabel = false;
+            }
           }
         } else {
           isShowActive = false;
+
+          if (normalLabel?.show) {
+            isShowLabel = true;
+          } else {
+            isShowLabel = false;
+          }
         }
 
         let mode =
@@ -120,7 +133,7 @@ const LabelBlock = (props) => {
           >
             {isShowActive
               ? activeLabel?.content(params)
-              : normalLabel?.content(params)}
+              : isShowLabel && normalLabel?.content(params)}
           </div>
         );
       })}
