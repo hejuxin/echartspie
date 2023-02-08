@@ -57,7 +57,6 @@ const Pie = (props) => {
       return new Array(dataArr.length).fill(-1);
     return dataArr;
   }, []);
-  console.log(chartOption.current);
   const getOps = (data = []) => {
     let isLegendCustom = false;
     if (legendOption.content) {
@@ -110,15 +109,12 @@ const Pie = (props) => {
               });
             }, 0);
           },
-          labelLine: {
-            length2: 50,
-          },
         };
 
-        if (radiusItem) {
-          series.radius = radiusItem;
-        }
+        // 对tooltip进行格式化
+        series.tooltip = formatterTooltip(series.tooltip);
 
+        // 对label进行格式化
         const { label = {} } = series;
         if (label.content) {
           label.formatter = () => {
@@ -132,6 +128,10 @@ const Pie = (props) => {
             ...series.labelLine,
             length2: labelLineExtendLength,
           };
+        }
+
+        if (radiusItem) {
+          series.radius = radiusItem;
         }
 
         return series;

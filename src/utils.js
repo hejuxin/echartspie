@@ -96,6 +96,7 @@ export const flatAndUnique = (arr = []) => {
 };
 
 const getTooltipPosition = (position, ...args) => {
+  if (!position) return null;
   if (typeof position === 'string') {
     return position;
   } else if (typeof position === 'function') {
@@ -104,12 +105,8 @@ const getTooltipPosition = (position, ...args) => {
     return position;
   } else if (typeof position === 'object') {
     const { mode, x, y } = position;
-    console.log(mode, 'ddd');
-    // return () => {
-    //   if (!mode || mode !== 'fixed') return null;
-    //   return [x || 0, y || 0];
-    // };
-    return null;
+    if (mode !== 'fixed') return null;
+    return [x || 0, y || 0];
   }
 };
 
@@ -119,21 +116,16 @@ export const formatterTooltip = (option = {}) => {
   const root = createRoot(dom);
 
   if (!content) {
-    const res = {
+    return {
       ...defaultOption.tooltip,
       ...option,
-    };
-
-    if (position) {
-      res.position = (point, params, dom, rect, size) => {
+      position: (point, params, dom, rect, size) => {
         return getTooltipPosition(position, [point, params, dom, rect, size]);
-      };
-    }
-    console.log(res, 'res');
-    return res;
+      },
+    };
   }
 
-  const res = {
+  return {
     ...defaultOption.tooltip,
     ...option,
     formatter: (params, ticket, callback) => {
@@ -148,15 +140,10 @@ export const formatterTooltip = (option = {}) => {
 
       return content;
     },
+    position: (point, params, dom, rect, size) => {
+      return getTooltipPosition(position, [point, params, dom, rect, size]);
+    },
   };
-  if (position) {
-    res.position = (point, params, dom, rect, size) => {
-      return null;
-    };
-  }
-  console.log(res, 'res');
-
-  return res;
 };
 
 export const formatterData = (data = [], seriesIndex = 0) => {

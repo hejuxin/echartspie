@@ -33,7 +33,7 @@ const TooltipDemo3 = () => {
                 `;
             },
             position: {
-              mode: '',
+              x: 100,
             },
           },
         }}
