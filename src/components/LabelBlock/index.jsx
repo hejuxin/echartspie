@@ -40,6 +40,7 @@ const LabelBlock = (props) => {
           ...option?.normal,
           ...item.label,
         };
+        // console.log(normalLabel, 'normalLabel');
 
         let isShowLabel = true;
         let isShowActive = false;

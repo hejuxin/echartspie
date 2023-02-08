@@ -189,6 +189,15 @@ const Pie = (props) => {
   };
 
   const handleInit = () => {
+    const autoPlaySeries = autoPlayOption.seriesIndex;
+    let _autoSeriesArr = [];
+    if (typeof autoPlaySeries === 'number') {
+      _autoSeriesArr = [autoPlaySeries];
+    } else if (Array.isArray(autoPlaySeries)) {
+      _autoSeriesArr = autoPlaySeries;
+    } else {
+      _autoSeriesArr = [];
+    }
     const radiusArr = [];
     const dataArr = [];
     const autoInfo = {};
@@ -201,7 +210,7 @@ const Pie = (props) => {
       ) {
         radiusArr[0] = radius;
         dataArr[0] = data;
-        autoInfo[0] = -1;
+        // autoInfo[0] = -1;
         labelObj[0] = [];
       } else if (typeof radius === 'object') {
         Object.keys(radius).forEach((key) => {
@@ -209,16 +218,25 @@ const Pie = (props) => {
           radiusArr[key] = radius[key];
           dataArr[key] = dataItem;
           // dataArr[key] = Array.isArray(dataItem) ? dataItem : data;
-          autoInfo[key] = -1;
           labelObj[key] = [];
+
+          if (!_autoSeriesArr.length) {
+            autoInfo[key] = -1;
+          }
         });
       }
     }
+
+    if (_autoSeriesArr.length) {
+      _autoSeriesArr.forEach((key) => {
+        autoInfo[key] = -1;
+      });
+    }
     setDataSource(formatterData(dataArr));
     setRadiusSource(radiusArr);
+    setLabelPos(labelObj);
 
     autoParams.init(autoInfo);
-    setLabelPos(labelObj);
 
     setInit(true);
   };

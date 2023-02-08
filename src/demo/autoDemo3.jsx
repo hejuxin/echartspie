@@ -80,7 +80,7 @@ const AutoDemo3 = () => {
           },
           {
             label: {
-              show: true,
+              show: false,
             },
             emphasis: {},
           },
