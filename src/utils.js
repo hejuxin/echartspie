@@ -95,14 +95,33 @@ export const flatAndUnique = (arr = []) => {
   return [...map.keys()];
 };
 
+const getTooltipPosition = (position, ...args) => {
+  if (!position) return null;
+  if (typeof position === 'string') {
+    return position;
+  } else if (typeof position === 'function') {
+    return position(...args);
+  } else if (Array.isArray(position)) {
+    return position;
+  } else if (typeof position === 'object') {
+    const { mode, x, y } = position;
+    if (mode !== 'fixed') return null;
+    return [x || 0, y || 0];
+  }
+};
+
 export const formatterTooltip = (option = {}) => {
-  const { content = '' } = option;
+  const { content = '', position } = option;
   const dom = document.createElement('div');
   const root = createRoot(dom);
+
   if (!content) {
     return {
       ...defaultOption.tooltip,
       ...option,
+      position: (point, params, dom, rect, size) => {
+        return getTooltipPosition(position, [point, params, dom, rect, size]);
+      },
     };
   }
 
@@ -120,6 +139,9 @@ export const formatterTooltip = (option = {}) => {
       }
 
       return content;
+    },
+    position: (point, params, dom, rect, size) => {
+      return getTooltipPosition(position, [point, params, dom, rect, size]);
     },
   };
 };
