@@ -77,7 +77,8 @@ const Pie = (props) => {
         data,
         seriesIndexArr: Object.keys(radiusSource),
       }),
-      tooltip: formatterTooltip(tooltipOption, autoInfo),
+      // todo 打平直接放到data里去
+      // tooltip: formatterTooltip(tooltipOption, autoInfo),
       // series: Object.keys(radius || {}).map((key, index) => {
       series: Object.keys(radiusSource).map((key) => {
         let newSeriesOps = [];
@@ -117,7 +118,16 @@ const Pie = (props) => {
         };
 
         // 对tooltip进行格式化
-        series.tooltip = formatterTooltip(series.tooltip, autoInfo);
+        // series.tooltip = formatterTooltip(series.tooltip, autoInfo);
+
+        // 打平后放到这里
+        series.tooltip = formatterTooltip(
+          {
+            ...tooltipOption,
+            ...series.tooltip,
+          },
+          autoInfo
+        );
 
         // 对label进行格式化
         const { label = {} } = series;
@@ -448,6 +458,7 @@ const Pie = (props) => {
           <TooltipBlock
             autoCurrent={autoParams.autoCurrent}
             dataSource={dataSource}
+            seriesOps={chartOption.current.series}
           />
         </div>
       )}

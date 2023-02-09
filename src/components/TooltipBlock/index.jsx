@@ -2,20 +2,70 @@ import React from 'react';
 import { getParams } from '../../utils';
 
 const TooltipBlock = (props) => {
-  const { autoCurrent = {}, dataSource } = props;
+  const { autoCurrent = {}, dataSource, seriesOps = {} } = props;
 
   return (
-    <>
+    <div>
       {Object.keys(autoCurrent).map((key) => {
         const value = autoCurrent[key];
         const data = dataSource[key];
+        const ops = seriesOps[key]?.tooltip || {};
         let index = -1;
+        let params = {};
 
-        if (value >= 0) {
+        if (value > -1) {
           index = data.findIndex((item) => item.dataIndex === value);
+
+          if (index > -1) {
+            params = getParams({ data, index });
+          }
         }
-        const params = getParams({ data, index });
-        console.log(params, 'params');
+
+        const { content, formatter } = ops;
+        if (content && Object.keys(params).length) {
+          if (typeof content === 'function') {
+            const res = content(params);
+
+            if (typeof res === 'string') {
+              return (
+                <div
+                  dangerouslySetInnerHTML={{
+                    __html: res,
+                  }}
+                ></div>
+              );
+            }
+
+            return res;
+          }
+        }
+
+        if (formatter && Object.keys(params).length) {
+          if (typeof formatter === 'function') {
+            const res = formatter(params);
+
+            if (typeof res === 'string') {
+              return (
+                <div
+                  dangerouslySetInnerHTML={{
+                    __html: res,
+                  }}
+                ></div>
+              );
+            }
+
+            return res;
+          }
+
+          return (
+            <div
+              dangerouslySetInnerHTML={{
+                __html: formatter,
+              }}
+            ></div>
+          );
+        }
+
         return (
           <div>
             <div
@@ -31,7 +81,7 @@ const TooltipBlock = (props) => {
           </div>
         );
       })}
-    </>
+    </div>
   );
 };
 
