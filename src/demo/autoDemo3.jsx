@@ -83,7 +83,8 @@ const AutoDemo3 = () => {
         ]}
         autoPlay
         autoPlayOption={{
-          seriesIndex: [0, 1],
+          // seriesIndex: [0, 1],
+          seriesIndex: 0,
         }}
       />
     </div>

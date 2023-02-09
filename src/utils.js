@@ -110,15 +110,23 @@ const getTooltipPosition = (position, ...args) => {
   }
 };
 
-export const formatterTooltip = (option = {}) => {
+export const formatterTooltip = (option = {}, autoInfo = {}) => {
   const { content = '', position } = option;
+  const { seriesIndex = [] } = autoInfo;
+
   const dom = document.createElement('div');
   const root = createRoot(dom);
 
+  const ops = {
+    ...defaultOption.tooltip,
+    ...option,
+  };
+  if (seriesIndex.length > 1) {
+    ops.show = false;
+  }
   if (!content) {
     return {
-      ...defaultOption.tooltip,
-      ...option,
+      ...ops,
       position: (point, params, dom, rect, size) => {
         return getTooltipPosition(position, [point, params, dom, rect, size]);
       },

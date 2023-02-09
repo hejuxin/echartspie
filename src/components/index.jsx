@@ -24,6 +24,7 @@ import { useAutoParams } from '../hooks';
 import LabelBlock from './LabelBlock';
 import LegendBlock from './LegendBlock';
 import CenterBlock from './CenterBlock';
+import TooltipBlock from './TooltipBlock';
 
 const Pie = (props) => {
   const {
@@ -65,6 +66,10 @@ const Pie = (props) => {
         isLegendCustom = true;
       }
     }
+
+    const autoInfo = {
+      seriesIndex: Object.keys(autoParams.autoCurrent),
+    };
     return {
       color,
       legend: formatterLegend({
@@ -72,7 +77,7 @@ const Pie = (props) => {
         data,
         seriesIndexArr: Object.keys(radiusSource),
       }),
-      tooltip: formatterTooltip(tooltipOption),
+      tooltip: formatterTooltip(tooltipOption, autoInfo),
       // series: Object.keys(radius || {}).map((key, index) => {
       series: Object.keys(radiusSource).map((key) => {
         let newSeriesOps = [];
@@ -112,7 +117,7 @@ const Pie = (props) => {
         };
 
         // 对tooltip进行格式化
-        series.tooltip = formatterTooltip(series.tooltip);
+        series.tooltip = formatterTooltip(series.tooltip, autoInfo);
 
         // 对label进行格式化
         const { label = {} } = series;
@@ -428,6 +433,23 @@ const Pie = (props) => {
       })}
       {!!Object.keys(centerBlockOption).length && (
         <CenterBlock {...centerBlockOption}>{getCenterContent()}</CenterBlock>
+      )}
+      {Object.keys(autoParams.autoCurrent).length > 1 && (
+        <div
+          style={{
+            position: 'absolute',
+            top: 0,
+            right: 0,
+            border: '1px solid',
+            // width: 100,
+            // height: 100,
+          }}
+        >
+          <TooltipBlock
+            autoCurrent={autoParams.autoCurrent}
+            dataSource={dataSource}
+          />
+        </div>
       )}
     </div>
   );
