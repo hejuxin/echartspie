@@ -1,6 +1,6 @@
 import React from 'react';
 import App from './App';
-import { Auto, Double, Doughnut, Label, Tooltip } from './pages';
+import { Auto, Double, Doughnut, Label, Legend, Tooltip } from './pages';
 
 const router = [
   {
@@ -22,6 +22,10 @@ const router = [
       {
         path: '/label',
         element: <Label />,
+      },
+      {
+        path: '/legend',
+        element: <Legend />,
       },
       {
         path: '/tooltip',
