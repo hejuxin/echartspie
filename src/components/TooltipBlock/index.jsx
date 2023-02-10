@@ -1,5 +1,5 @@
 import React from 'react';
-import { getParams } from '../../utils';
+import { getParams, getParams2 } from '../../utils';
 
 const TooltipBlock = (props) => {
   const { autoCurrent = {}, dataSource, seriesOps = {} } = props;
@@ -10,15 +10,12 @@ const TooltipBlock = (props) => {
         const value = autoCurrent[key];
         const data = dataSource[key];
         const ops = seriesOps[key]?.tooltip || {};
-        let index = -1;
         let params = {};
 
         if (value > -1) {
-          index = data.findIndex((item) => item.dataIndex === value);
+          params = getParams2({ data: dataSource, item: data[value] });
 
-          if (index > -1) {
-            params = getParams({ data, index });
-          }
+          if (!Object.keys(params).length) return null;
         }
 
         const { content, formatter } = ops;

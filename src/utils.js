@@ -210,3 +210,33 @@ export const getParams = ({
 };
 
 export const isNum = (value) => typeof value === 'number';
+
+export const getParams2 = ({ data = [], item = {}, color = defaultColor }) => {
+  let totalBySeriersIndex = {};
+
+  data.forEach((dataItem) => {
+    const { seriesIndex } = dataItem;
+    if (!totalBySeriersIndex[seriesIndex]) {
+      totalBySeriersIndex[seriesIndex] = 0;
+    }
+    totalBySeriersIndex[seriesIndex] += dataItem.value;
+  });
+
+  const flatData = flatAndUnique(data);
+  // const _colorIndex = flatData.findIndex(flatItem => flatItem.seriesIndex === item.seriesIndex && flatItem.dataIndex === item.dataIndex);
+  // const colorIndexByName = flatData.findIndex(flatItem => flatItem.name === item.name);
+  let colorIndex = flatData.findIndex(
+    (flatItem) => flatItem.name === item.name
+  );
+  if (colorIndex > color.length) {
+    colorIndex = colorIndex % color.length;
+  }
+
+  return {
+    name: item.name,
+    value: item.value,
+    dataIndex: item.dataIndex,
+    color: color[colorIndex],
+    percent: (item.value / totalBySeriersIndex[item.seriesIndex]) * 100 || 0,
+  };
+};
