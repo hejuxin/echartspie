@@ -5,7 +5,7 @@ import Pie from '../components';
 const AutoDemo1 = () => {
   return (
     <>
-      <h3>普通轮播 不传任何配置</h3>
+      <h3>普通轮播 轮播时不出现tooltip</h3>
       <div style={{ width: 300, height: 300 }}>
         <Pie
           data={defaultData}
@@ -25,6 +25,9 @@ const AutoDemo1 = () => {
             emphasis: {},
           }}
           autoPlay
+          autoPlayOption={{
+            showTip: false,
+          }}
         />
       </div>
     </>

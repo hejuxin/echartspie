@@ -22,6 +22,7 @@ import DoubleDemo3 from './doubleDemo3';
 import AutoDemo1 from './autoDemo1';
 import AutoDemo2 from './autoDemo2';
 import AutoDemo3 from './autoDemo3';
+import AutoDemo11 from './autoDemo11';
 
 export {
   TooltipDemo1,
@@ -43,4 +44,5 @@ export {
   AutoDemo1,
   AutoDemo2,
   AutoDemo3,
+  AutoDemo11,
 };

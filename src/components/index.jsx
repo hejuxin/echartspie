@@ -78,7 +78,7 @@ const Pie = (props) => {
         seriesIndexArr: Object.keys(radiusSource),
       }),
       // todo 打平直接放到data里去
-      // tooltip: formatterTooltip(tooltipOption, autoInfo),
+      tooltip: formatterTooltip(tooltipOption, autoInfo),
       // series: Object.keys(radius || {}).map((key, index) => {
       series: Object.keys(radiusSource).map((key) => {
         let newSeriesOps = [];
@@ -169,7 +169,6 @@ const Pie = (props) => {
       dataSource,
     });
   };
-  // console.log(autoParams.autoIdx);
   const handleHightlight = ({ seriesIndex, dataIndex, isShowTip = false }) => {
     const seriesIndexArr = isNum(seriesIndex) ? [seriesIndex] : seriesIndex;
     const dataInfo = {
@@ -333,7 +332,10 @@ const Pie = (props) => {
         ? _autoPlayOption.seriesIndex
         : Object.keys(autoParams.autoCurrent),
       dataIndex: autoParams.autoCurrent,
-      isShowTip: true,
+      isShowTip:
+        typeof _autoPlayOption.showTip === 'boolean'
+          ? _autoPlayOption.showTip
+          : true,
     });
   }, [autoParams.autoCurrent]);
 
