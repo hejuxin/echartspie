@@ -5,6 +5,7 @@ import Pie from '../components';
 const LabelDemo2 = () => {
   return (
     <div style={{ width: 300, height: 300 }}>
+      <h3>线末端</h3>
       <Pie
         data={defaultData}
         legendOption={{
