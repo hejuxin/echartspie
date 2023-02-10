@@ -9,7 +9,10 @@ const TooltipBlock = (props) => {
       {Object.keys(autoCurrent).map((key) => {
         const value = autoCurrent[key];
         const data = dataSource[key];
-        const ops = seriesOps[key]?.tooltip || {};
+        const ops = {
+          ...(seriesOps[key]?.tooltip || {}),
+          ...data[value]?.tooltip,
+        };
         let params = {};
 
         if (value > -1) {
