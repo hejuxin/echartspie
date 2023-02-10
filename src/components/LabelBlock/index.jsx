@@ -169,7 +169,9 @@ const LabelBlock = (props) => {
             >
               {isShowActive
                 ? activeLabel?.content(params)
-                : isShowLabel && normalLabel?.content(params)}
+                : isShowLabel &&
+                  normalLabel?.content &&
+                  normalLabel?.content(params)}
             </div>
           </>
         );
