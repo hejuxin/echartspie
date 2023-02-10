@@ -47,6 +47,7 @@ const LabelDemo2 = () => {
           },
           labelLine: {
             // show: false,
+            cap: 'round',
             lineStyle: {
               cap: 'round',
             },

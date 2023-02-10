@@ -423,9 +423,11 @@ const Pie = (props) => {
         const labelOption = {
           normal: {
             ...seriesItem.label,
+            cap: seriesItem.labelLine?.cap,
           },
           active: {
             ...seriesItem.emphasis?.label,
+            cap: seriesItem.emphasis?.labelLine?.cap,
           },
         };
         return (
