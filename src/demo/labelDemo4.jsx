@@ -45,7 +45,7 @@ const LabelDemo4 = () => {
                     >
                       {params.name}
                     </div>
-                    <div>{params.value}个</div>
+                    <div style={{ color: params.color }}>{params.value}个</div>
                     <div>{params.percent?.toFixed(2)}</div>
                   </div>
                 );
