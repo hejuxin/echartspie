@@ -38,6 +38,7 @@ const Pie = (props) => {
     autoPlayOption = {},
     centerBlockOption = {},
     wrapStyle = {},
+    type = 'pie',
   } = props;
   const domRef = useRef();
   const chartRef = useRef();
@@ -47,6 +48,11 @@ const Pie = (props) => {
   const [dataSource, setDataSource] = useState([]);
   const [labelPos, setLabelPos] = useState({});
   const [radiusSource, setRadiusSource] = useState([]);
+
+  const isPie = useMemo(() => {
+    return type !== 'sunburst';
+  }, [type]);
+
   const getCustomLegendData = useCallback((data) => {
     const dataArr = data.map((item) => {
       if (Array.isArray(item)) {
@@ -70,16 +76,95 @@ const Pie = (props) => {
     const autoInfo = {
       seriesIndex: Object.keys(autoParams.autoCurrent),
     };
+    console.log(data, ' data', radiusSource);
+    if (isPie) {
+      return {
+        color,
+        legend: formatterLegend({
+          option: legendOption,
+          data,
+          seriesIndexArr: Object.keys(radiusSource),
+        }),
+        // todo 打平直接放到data里去
+        tooltip: formatterTooltip(tooltipOption, autoInfo),
+        // series: Object.keys(radius || {}).map((key, index) => {
+        series: Object.keys(radiusSource).map((key) => {
+          let newSeriesOps = [];
+          if (!Array.isArray(seriesOption)) {
+            newSeriesOps[key] = seriesOption;
+          } else {
+            newSeriesOps = seriesOption;
+          }
+          const seriesItem = newSeriesOps[key] || {};
+          const dataItem = data[key] || [];
+          const radiusItem = (radiusSource || {})[key];
+
+          const series = {
+            ...defaultOption.series[0],
+            ...seriesItem,
+            type,
+            data: isLegendCustom ? getCustomLegendData(dataItem) : dataItem,
+            labelLayout: (params) => {
+              let dataIndex = params.dataIndex;
+              if (!isLegendCustom) {
+                const showData = dataItem.filter((item) => item.show);
+                dataIndex = showData[params.dataIndex]?.dataIndex;
+              }
+
+              setTimeout(() => {
+                setLabelPos((labelPosObj) => {
+                  let newArr = [...(labelPosObj[key] || [])];
+                  newArr[dataIndex] = params.labelLinePoints;
+                  const newObj = {
+                    ...labelPosObj,
+                    [key]: newArr,
+                  };
+
+                  return newObj;
+                });
+              }, 0);
+            },
+          };
+
+          // 对tooltip进行格式化
+          // series.tooltip = formatterTooltip(series.tooltip, autoInfo);
+
+          // 打平后放到这里
+          series.tooltip = formatterTooltip(
+            {
+              ...tooltipOption,
+              ...series.tooltip,
+            },
+            autoInfo
+          );
+
+          // 对label进行格式化
+          const { label = {} } = series;
+          if (label.content) {
+            label.formatter = () => {
+              return '';
+            };
+          }
+
+          const labelLineExtendLength = label.lineExtendLength;
+          if (label.isLineExtend && isNum(labelLineExtendLength)) {
+            series.labelLine = {
+              ...series.labelLine,
+              length2: labelLineExtendLength,
+            };
+          }
+
+          if (radiusItem) {
+            series.radius = radiusItem;
+          }
+
+          return series;
+        }),
+      };
+    }
+
     return {
       color,
-      legend: formatterLegend({
-        option: legendOption,
-        data,
-        seriesIndexArr: Object.keys(radiusSource),
-      }),
-      // todo 打平直接放到data里去
-      tooltip: formatterTooltip(tooltipOption, autoInfo),
-      // series: Object.keys(radius || {}).map((key, index) => {
       series: Object.keys(radiusSource).map((key) => {
         let newSeriesOps = [];
         if (!Array.isArray(seriesOption)) {
@@ -94,56 +179,9 @@ const Pie = (props) => {
         const series = {
           ...defaultOption.series[0],
           ...seriesItem,
-          data: isLegendCustom ? getCustomLegendData(dataItem) : dataItem,
-          labelLayout: (params) => {
-            let dataIndex = params.dataIndex;
-            if (!isLegendCustom) {
-              const showData = dataItem.filter((item) => item.show);
-              dataIndex = showData[params.dataIndex]?.dataIndex;
-            }
-
-            setTimeout(() => {
-              setLabelPos((labelPosObj) => {
-                let newArr = [...(labelPosObj[key] || [])];
-                newArr[dataIndex] = params.labelLinePoints;
-                const newObj = {
-                  ...labelPosObj,
-                  [key]: newArr,
-                };
-
-                return newObj;
-              });
-            }, 0);
-          },
+          type,
+          data: dataItem,
         };
-
-        // 对tooltip进行格式化
-        // series.tooltip = formatterTooltip(series.tooltip, autoInfo);
-
-        // 打平后放到这里
-        series.tooltip = formatterTooltip(
-          {
-            ...tooltipOption,
-            ...series.tooltip,
-          },
-          autoInfo
-        );
-
-        // 对label进行格式化
-        const { label = {} } = series;
-        if (label.content) {
-          label.formatter = () => {
-            return '';
-          };
-        }
-
-        const labelLineExtendLength = label.lineExtendLength;
-        if (label.isLineExtend && isNum(labelLineExtendLength)) {
-          series.labelLine = {
-            ...series.labelLine,
-            length2: labelLineExtendLength,
-          };
-        }
 
         if (radiusItem) {
           series.radius = radiusItem;
@@ -255,7 +293,11 @@ const Pie = (props) => {
     setLabelPos(labelObj);
 
     autoParams.init(autoInfo);
-    setDataSource(formatterData(dataArr));
+    if (isPie) {
+      setDataSource(formatterData(dataArr));
+    } else {
+      setDataSource([data]);
+    }
 
     setInit(true);
   };
@@ -320,6 +362,7 @@ const Pie = (props) => {
 
   useUpdateLayoutEffect(() => {
     const ops = getOps(dataSource);
+    console.log(ops, 'ops');
     chartOption.current = ops;
     chartRef.current.setOption(ops);
     createInterval();

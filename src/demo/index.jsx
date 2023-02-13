@@ -24,6 +24,9 @@ import AutoDemo2 from './autoDemo2';
 import AutoDemo3 from './autoDemo3';
 import AutoDemo11 from './autoDemo11';
 
+import SunburstDemo1 from './sunburstDemo1';
+import SunburstDemo2 from './sunburstDemo2';
+
 export {
   TooltipDemo1,
   TooltipDemo2,
@@ -45,4 +48,6 @@ export {
   AutoDemo2,
   AutoDemo3,
   AutoDemo11,
+  SunburstDemo1,
+  SunburstDemo2,
 };

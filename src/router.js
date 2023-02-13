@@ -1,6 +1,14 @@
 import React from 'react';
 import App from './App';
-import { Auto, Double, Doughnut, Label, Legend, Tooltip } from './pages';
+import {
+  Auto,
+  Double,
+  Doughnut,
+  Label,
+  Legend,
+  Tooltip,
+  Sunburst,
+} from './pages';
 
 const router = [
   {
@@ -30,6 +38,10 @@ const router = [
       {
         path: '/tooltip',
         element: <Tooltip />,
+      },
+      {
+        path: '/sunburst',
+        element: <Sunburst />,
       },
     ],
   },
