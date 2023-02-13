@@ -24,6 +24,7 @@ import { useAutoParams } from '../hooks';
 import LabelBlock from './LabelBlock';
 import LegendBlock from './LegendBlock';
 import CenterBlock from './CenterBlock';
+import TooltipBlock from './TooltipBlock';
 
 const Pie = (props) => {
   const {
@@ -65,6 +66,10 @@ const Pie = (props) => {
         isLegendCustom = true;
       }
     }
+
+    const autoInfo = {
+      seriesIndex: Object.keys(autoParams.autoCurrent),
+    };
     return {
       color,
       legend: formatterLegend({
@@ -72,7 +77,8 @@ const Pie = (props) => {
         data,
         seriesIndexArr: Object.keys(radiusSource),
       }),
-      tooltip: formatterTooltip(tooltipOption),
+      // todo 打平直接放到data里去
+      tooltip: formatterTooltip(tooltipOption, autoInfo),
       // series: Object.keys(radius || {}).map((key, index) => {
       series: Object.keys(radiusSource).map((key) => {
         let newSeriesOps = [];
@@ -112,7 +118,16 @@ const Pie = (props) => {
         };
 
         // 对tooltip进行格式化
-        series.tooltip = formatterTooltip(series.tooltip);
+        // series.tooltip = formatterTooltip(series.tooltip, autoInfo);
+
+        // 打平后放到这里
+        series.tooltip = formatterTooltip(
+          {
+            ...tooltipOption,
+            ...series.tooltip,
+          },
+          autoInfo
+        );
 
         // 对label进行格式化
         const { label = {} } = series;
@@ -148,12 +163,12 @@ const Pie = (props) => {
   }, [autoPlay, autoPlayOption]);
 
   const createInterval = () => {
+    console.log('createInterval');
     autoParams.createInterval({
       ..._autoPlayOption,
       dataSource,
     });
   };
-
   const handleHightlight = ({ seriesIndex, dataIndex, isShowTip = false }) => {
     const seriesIndexArr = isNum(seriesIndex) ? [seriesIndex] : seriesIndex;
     const dataInfo = {
@@ -189,6 +204,15 @@ const Pie = (props) => {
   };
 
   const handleInit = () => {
+    const autoPlaySeries = autoPlayOption.seriesIndex;
+    let _autoSeriesArr = [];
+    if (typeof autoPlaySeries === 'number') {
+      _autoSeriesArr = [autoPlaySeries];
+    } else if (Array.isArray(autoPlaySeries)) {
+      _autoSeriesArr = autoPlaySeries;
+    } else {
+      _autoSeriesArr = [];
+    }
     const radiusArr = [];
     const dataArr = [];
     const autoInfo = {};
@@ -201,24 +225,37 @@ const Pie = (props) => {
       ) {
         radiusArr[0] = radius;
         dataArr[0] = data;
-        autoInfo[0] = -1;
         labelObj[0] = [];
+
+        if (!_autoSeriesArr.length) {
+          autoInfo[0] = -1;
+        }
+        // autoInfo[0] = -1;
       } else if (typeof radius === 'object') {
         Object.keys(radius).forEach((key) => {
           const dataItem = data[key];
           radiusArr[key] = radius[key];
           dataArr[key] = dataItem;
-          // dataArr[key] = Array.isArray(dataItem) ? dataItem : data;
-          autoInfo[key] = -1;
           labelObj[key] = [];
+
+          if (!_autoSeriesArr.length) {
+            autoInfo[key] = -1;
+          }
+          // autoInfo[key] = -1;
         });
       }
     }
-    setDataSource(formatterData(dataArr));
+
+    if (_autoSeriesArr.length) {
+      _autoSeriesArr.forEach((key) => {
+        autoInfo[key] = -1;
+      });
+    }
     setRadiusSource(radiusArr);
+    setLabelPos(labelObj);
 
     autoParams.init(autoInfo);
-    setLabelPos(labelObj);
+    setDataSource(formatterData(dataArr));
 
     setInit(true);
   };
@@ -295,7 +332,10 @@ const Pie = (props) => {
         ? _autoPlayOption.seriesIndex
         : Object.keys(autoParams.autoCurrent),
       dataIndex: autoParams.autoCurrent,
-      isShowTip: true,
+      isShowTip:
+        typeof _autoPlayOption.showTip === 'boolean'
+          ? _autoPlayOption.showTip
+          : true,
     });
   }, [autoParams.autoCurrent]);
 
@@ -385,9 +425,11 @@ const Pie = (props) => {
         const labelOption = {
           normal: {
             ...seriesItem.label,
+            cap: seriesItem.labelLine?.cap,
           },
           active: {
             ...seriesItem.emphasis?.label,
+            cap: seriesItem.emphasis?.labelLine?.cap,
           },
         };
         return (
@@ -405,6 +447,24 @@ const Pie = (props) => {
       })}
       {!!Object.keys(centerBlockOption).length && (
         <CenterBlock {...centerBlockOption}>{getCenterContent()}</CenterBlock>
+      )}
+      {Object.keys(autoParams.autoCurrent).length > 1 && (
+        <div
+          style={{
+            position: 'absolute',
+            top: 0,
+            right: 0,
+            // border: '1px solid',
+            // width: 100,
+            // height: 100,
+          }}
+        >
+          <TooltipBlock
+            autoCurrent={autoParams.autoCurrent}
+            dataSource={dataSource}
+            seriesOps={chartOption.current.series}
+          />
+        </div>
       )}
     </div>
   );

@@ -66,19 +66,15 @@ const DoubleDemo3 = () => {
                 return (
                   <div>
                     <div>{params.name}</div>
-                    <div
-                      style={{
-                        width: '100%',
-                        height: 1,
-                        background: params.color,
-                      }}
-                    ></div>
                     <div>
                       {params.value}个 {params.percent?.toFixed(2)}
                     </div>
                   </div>
                 );
               },
+              isLineExtend: true,
+              lineExtendLength: 100,
+              mode: 'insideLine',
             },
             emphasis: {
               // label: {

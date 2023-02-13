@@ -40,6 +40,7 @@ const LabelBlock = (props) => {
           ...option?.normal,
           ...item.label,
         };
+        // console.log(normalLabel, 'normalLabel');
 
         let isShowLabel = true;
         let isShowActive = false;
@@ -118,22 +119,61 @@ const LabelBlock = (props) => {
           maxWidth = maxWidth - distance;
         }
 
+        const capStyle = {
+          position: 'absolute',
+          left: endPosX < 0 ? 0 : endPosX > chartsWidth ? chartsWidth : endPosX,
+          top: endPosY,
+
+          transform: 'translateY(-50%)',
+          background: params.color,
+        };
+
         return (
-          <div
-            style={{
-              left,
-              top: endPosY,
-              transform: `translate(${transformX}, ${transformY})`,
-              maxWidth,
-              textAlign,
-            }}
-            key={`label_${item.name}`}
-            className="label-item"
-          >
-            {isShowActive
-              ? activeLabel?.content(params)
-              : isShowLabel && normalLabel?.content(params)}
-          </div>
+          <>
+            {isShowActive ? (
+              <div
+                style={{
+                  ...capStyle,
+                  borderRadius: activeLabel.cap === 'round' ? '50%' : 0,
+                  width:
+                    !activeLabel.cap || activeLabel.cap === 'butt' ? 0 : 10,
+                  height:
+                    !activeLabel.cap || activeLabel.cap === 'butt' ? 0 : 10,
+                }}
+              ></div>
+            ) : (
+              isShowLabel && (
+                <div
+                  style={{
+                    ...capStyle,
+                    borderRadius: normalLabel.cap === 'round' ? '50%' : 0,
+                    width:
+                      !normalLabel.cap || normalLabel.cap === 'butt' ? 0 : 10,
+                    height:
+                      !normalLabel.cap || normalLabel.cap === 'butt' ? 0 : 10,
+                  }}
+                ></div>
+              )
+            )}
+
+            <div
+              style={{
+                left,
+                top: endPosY,
+                transform: `translate(${transformX}, ${transformY})`,
+                maxWidth,
+                textAlign,
+              }}
+              key={`label_${item.name}`}
+              className="label-item"
+            >
+              {isShowActive
+                ? activeLabel?.content(params)
+                : isShowLabel &&
+                  normalLabel?.content &&
+                  normalLabel?.content(params)}
+            </div>
+          </>
         );
       })}
     </>
