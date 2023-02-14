@@ -165,6 +165,7 @@ const Pie = (props) => {
 
     return {
       color,
+      tooltip: formatterTooltip(tooltipOption),
       series: Object.keys(radiusSource).map((key) => {
         let newSeriesOps = [];
         if (!Array.isArray(seriesOption)) {
@@ -327,12 +328,14 @@ const Pie = (props) => {
           });
         });
 
-        autoParams.setAutoCurrent((obj) => {
-          return {
-            ...obj,
-            [seriesIndex]: dataIndex,
-          };
-        });
+        if (_autoPlayOption.enable) {
+          autoParams.setAutoCurrent((obj) => {
+            return {
+              ...obj,
+              [seriesIndex]: dataIndex,
+            };
+          });
+        }
         // handleHightlight({ seriesIndex, dataIndex, isShowTip: true });
       });
       chartRef.current.on('mouseout', (value) => {

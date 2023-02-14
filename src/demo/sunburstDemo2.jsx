@@ -77,6 +77,19 @@ const SunburstDemo1 = () => {
             bottom: 0,
             icon: 'circle',
           }}
+          tooltipOption={{
+            content: (params, ticket, callback) => {
+              return `
+                  <div style="font-size: 14px; color: #595959">
+                    <div>${params.name}</div>
+                    <div>
+                    <span style="color: ${params.color};font-size: 24px; font-weight: 600;">${params.value}</span>  个
+                    </div>
+
+                  </div>
+                `;
+            },
+          }}
           seriesOption={{
             itemStyle: {
               borderWidth: 2,
