@@ -165,6 +165,9 @@ const Pie = (props) => {
 
     return {
       color,
+      legend: {
+        show: false,
+      },
       tooltip: formatterTooltip(tooltipOption),
       series: Object.keys(radiusSource).map((key) => {
         let newSeriesOps = [];
