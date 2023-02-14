@@ -187,6 +187,8 @@ const Pie = (props) => {
           series.radius = radiusItem;
         }
 
+        // todo sunburst没有tooltip配置项
+
         return series;
       }),
     };
@@ -422,6 +424,7 @@ const Pie = (props) => {
   };
   const getCenterContent = () => {
     let seriesIndex = 0;
+    // todo 是否有问题 为啥是autoParams 如果没开auto会咋样
     const idxObj = autoParams.autoCurrent;
     Object.keys(idxObj).forEach((key) => {
       if (idxObj[key] !== -1) {
@@ -429,8 +432,10 @@ const Pie = (props) => {
       }
     });
 
+    const data = dataSource[seriesIndex];
+    const flatData = flatAndUnique(data);
     const params = getParams({
-      data: dataSource[seriesIndex],
+      data: isPie ? flatData : [''].concat(flatData),
       index: idxObj[seriesIndex],
       color,
     });

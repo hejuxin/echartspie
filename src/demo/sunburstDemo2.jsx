@@ -68,11 +68,10 @@ const SunburstDemo1 = () => {
   ];
   return (
     <>
-      <h3>普通轮播 不传任何配置</h3>
       <div style={{ width: 300, height: 300 }}>
         <Pie
           type="sunburst"
-          radius={[0, '90%']}
+          radius={['30%', '90%']}
           data={data}
           legendOption={{
             bottom: 0,
@@ -85,11 +84,31 @@ const SunburstDemo1 = () => {
               borderRadius: 10,
             },
             label: {
-              show: false,
+              rotate: 'radial',
             },
             emphasis: {},
           }}
-          autoPlay
+          centerBlockOption={{
+            margin: 5,
+            padding: 5,
+            border: '1px solid #000',
+            radius: '30%',
+            backgroundColor: '#DBDFF1',
+            content: (params) => {
+              return (
+                <div
+                  style={{
+                    position: 'absolute',
+                    left: '50%',
+                    top: '50%',
+                    transform: 'translate(-50%, -50%)',
+                  }}
+                >
+                  {params.name}
+                </div>
+              );
+            },
+          }}
         />
       </div>
     </>

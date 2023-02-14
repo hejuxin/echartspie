@@ -87,6 +87,9 @@ export const flatAndUnique = (arr = []) => {
         loop(item);
       } else if (!map.get(item)) {
         map.set(item);
+        if (item.children) {
+          loop(item.children);
+        }
       }
     });
   };
