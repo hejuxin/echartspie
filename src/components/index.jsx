@@ -328,14 +328,21 @@ const Pie = (props) => {
           });
         });
 
-        if (_autoPlayOption.enable) {
-          autoParams.setAutoCurrent((obj) => {
-            return {
-              ...obj,
-              [seriesIndex]: dataIndex,
-            };
-          });
-        }
+        // todo
+        // if (_autoPlayOption.enable) {
+        //   autoParams.setAutoCurrent((obj) => {
+        //     return {
+        //       ...obj,
+        //       [seriesIndex]: dataIndex,
+        //     };
+        //   });
+        // }
+        autoParams.setAutoCurrent((obj) => {
+          return {
+            ...obj,
+            [seriesIndex]: dataIndex,
+          };
+        });
         // handleHightlight({ seriesIndex, dataIndex, isShowTip: true });
       });
       chartRef.current.on('mouseout', (value) => {
@@ -347,6 +354,10 @@ const Pie = (props) => {
           };
         });
 
+        // todo
+        // if (_autoPlayOption.enable) {
+        //   createInterval();
+        // }
         createInterval();
       });
 
