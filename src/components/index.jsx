@@ -19,6 +19,7 @@ import {
   formatterSunData,
   flatAndUnique,
   getParams,
+  getWholeParams,
   isNum,
 } from '../utils';
 import { useAutoParams } from '../hooks';
@@ -40,6 +41,7 @@ const Pie = (props) => {
     centerBlockOption = {},
     wrapStyle = {},
     type = 'pie',
+    highLightCallback = () => {},
   } = props;
   const domRef = useRef();
   const chartRef = useRef();
@@ -77,7 +79,6 @@ const Pie = (props) => {
     const autoInfo = {
       seriesIndex: Object.keys(autoParams.autoCurrent),
     };
-    console.log(data, ' data', radiusSource);
     if (isPie) {
       return {
         color,
@@ -225,6 +226,8 @@ const Pie = (props) => {
       }),
     };
 
+    console.log(dataInfo, 'dataInfo');
+
     chartRef.current.dispatchAction({
       type: 'downplay',
     });
@@ -326,7 +329,8 @@ const Pie = (props) => {
   useUpdateLayoutEffect(() => {
     if (init) {
       chartRef.current.on('mouseover', (value) => {
-        const { seriesIndex, dataIndex } = value;
+        const { seriesIndex, dataIndex, data } = value;
+        console.log(value, 'mouseover');
 
         autoParams.removeInterval(() => {
           const current = autoParams.getWip();
@@ -351,6 +355,15 @@ const Pie = (props) => {
             [seriesIndex]: dataIndex,
           };
         });
+
+        let wholeTree;
+        if (!isPie) {
+          wholeTree = getWholeParams({
+            data: dataSource[0],
+            item: data,
+          });
+        }
+        highLightCallback(data, wholeTree);
         // handleHightlight({ seriesIndex, dataIndex, isShowTip: true });
       });
       chartRef.current.on('mouseout', (value) => {
@@ -386,7 +399,6 @@ const Pie = (props) => {
 
   useUpdateLayoutEffect(() => {
     const ops = getOps(dataSource);
-    console.log(ops, 'ops');
     chartOption.current = ops;
     chartRef.current.setOption(ops);
     createInterval();
@@ -445,27 +457,39 @@ const Pie = (props) => {
     setDataSource(newData);
   };
   const getCenterContent = () => {
-    let seriesIndex = 0;
+    let seriesIndex = -1;
     // todo 是否有问题 为啥是autoParams 如果没开auto会咋样
     const idxObj = autoParams.autoCurrent;
     Object.keys(idxObj).forEach((key) => {
-      if (idxObj[key] !== -1) {
+      if (typeof idxObj[key] === 'number' && idxObj[key] !== -1) {
         seriesIndex = key;
       }
     });
 
+    if (seriesIndex === -1) return;
+
     const data = dataSource[seriesIndex];
     const flatData = flatAndUnique(data);
-    console.log(flatData, 'flatData');
     const params = getParams({
       data: isPie ? flatData : [''].concat(flatData),
       index: idxObj[seriesIndex],
       color,
     });
+
+    let wholeTree;
+
+    if (!isPie && flatData.length) {
+      const item = flatData.find((flatItem) => params.name === flatItem.name);
+      wholeTree = getWholeParams({
+        data,
+        item,
+      });
+    }
+
     const { content } = centerBlockOption;
     if (!content) return;
     if (typeof content === 'function') {
-      return content(params);
+      return content(params, wholeTree);
     }
     return content;
   };

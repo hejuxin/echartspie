@@ -6,62 +6,27 @@ const SunburstDemo1 = () => {
   const data = [
     {
       name: 'Grandpa',
+      value: 15,
       children: [
         {
-          name: 'Uncle Leo',
-          value: 15,
-          children: [
-            {
-              name: 'Cousin Jack',
-              value: 2,
-            },
-            {
-              name: 'Cousin Mary',
-              value: 5,
-              children: [
-                {
-                  name: 'Jackson',
-                  value: 2,
-                },
-              ],
-            },
-            {
-              name: 'Cousin Ben',
-              value: 4,
-            },
-          ],
-        },
-        {
-          name: 'Father',
-          value: 10,
-          children: [
-            {
-              name: 'Me',
-              value: 5,
-            },
-            {
-              name: 'Brother Peter',
-              value: 1,
-            },
-          ],
+          value: 5,
+          name: 'Grandpa11',
+          emphasis: {
+            focus: 'ancestor',
+          },
         },
       ],
     },
     {
       name: 'Nancy',
+      value: 19,
       children: [
         {
-          name: 'Uncle Nike',
-          children: [
-            {
-              name: 'Cousin Betty',
-              value: 1,
-            },
-            {
-              name: 'Cousin Jenny',
-              value: 2,
-            },
-          ],
+          value: 2,
+          name: 'Nancy11',
+          emphasis: {
+            focus: 'ancestor',
+          },
         },
       ],
     },
@@ -73,22 +38,8 @@ const SunburstDemo1 = () => {
           type="sunburst"
           radius={['30%', '90%']}
           data={data}
-          legendOption={{
-            bottom: 0,
-            icon: 'circle',
-          }}
           tooltipOption={{
-            content: (params, ticket, callback) => {
-              return `
-                  <div style="font-size: 14px; color: #595959">
-                    <div>${params.name}</div>
-                    <div>
-                    <span style="color: ${params.color};font-size: 24px; font-weight: 600;">${params.value}</span>  个
-                    </div>
-
-                  </div>
-                `;
-            },
+            show: false,
           }}
           seriesOption={{
             itemStyle: {
@@ -97,17 +48,20 @@ const SunburstDemo1 = () => {
               borderRadius: 10,
             },
             label: {
-              rotate: 'radial',
+              show: false,
             },
-            emphasis: {},
+            emphasis: {
+              // focus: 'descendant',
+            },
+            nodeClick: false,
           }}
           centerBlockOption={{
             margin: 5,
             padding: 5,
-            border: '1px solid #000',
+            border: '1px solid #DBDFF1',
             radius: '30%',
-            backgroundColor: '#DBDFF1',
-            content: (params) => {
+            content: (params, v) => {
+              console.log(params, v, 'params');
               return (
                 <div
                   style={{
@@ -121,6 +75,9 @@ const SunburstDemo1 = () => {
                 </div>
               );
             },
+          }}
+          highLightCallback={(params, v) => {
+            console.log(params, v, 'highLightCallback');
           }}
         />
       </div>

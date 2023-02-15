@@ -67,29 +67,30 @@ const SunburstDemo1 = () => {
       ],
     },
   ];
+
   const domRef = useRef();
-  useLayoutEffect(() => {
-    const myChart = echarts.init(domRef.current);
-    const ops = {
-      series: {
-        type: 'sunburst',
-        // emphasis: {
-        //     focus: 'ancestor'
-        // },
-        data: data,
-        radius: [0, '90%'],
-        label: {
-          rotate: 'radial',
-        },
-      },
-    };
-    myChart.setOption(ops);
-  }, []);
+  // useLayoutEffect(() => {
+  //   const myChart = echarts.init(domRef.current);
+  //   const ops = {
+  //     series: {
+  //       type: 'sunburst',
+  //       // emphasis: {
+  //       //     focus: 'ancestor'
+  //       // },
+  //       data: data,
+  //       radius: [0, '90%'],
+  //       label: {
+  //         rotate: 'radial',
+  //       },
+  //     },
+  //   };
+  //   myChart.setOption(ops);
+  // }, []);
   return (
     <>
       <h3>普通轮播 不传任何配置</h3>
       <div style={{ width: 300, height: 300 }}>
-        {/* <Pie
+        <Pie
           type="sunburst"
           radius={[0, '90%']}
           data={data}
@@ -108,9 +109,8 @@ const SunburstDemo1 = () => {
             },
             emphasis: {},
           }}
-          autoPlay
-        /> */}
-        <div ref={domRef} style={{ width: '100%', height: '100%' }}></div>
+          // autoPlay
+        />
       </div>
     </>
   );

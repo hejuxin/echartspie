@@ -172,15 +172,25 @@ export const formatterData = (data = [], seriesIndex = 0) => {
 };
 
 export const formatterSunData = (data = [], id = -1) => {
-  return data.map((item, index) => {
-    const childrenArr = item.children || [];
+  const flatData = flatAndUnique(data);
+  const loop = (array = [], id = -1) => {
+    if (!array.length) return;
+    return array.map((item, index) => {
+      const childrenArr = item.children || [];
 
-    return {
-      ...item,
-      parentId: id,
-      children: formatterSunData(childrenArr, index),
-    };
-  });
+      const itemId = flatData.findIndex(
+        (flatItem) => item.name === flatItem.name
+      );
+      return {
+        ...item,
+        parentId: id,
+        id: itemId,
+        children: loop(childrenArr, itemId),
+      };
+    });
+  };
+
+  return loop(data);
 };
 
 export const getParams = ({
@@ -254,4 +264,14 @@ export const getParams2 = ({ data = [], item = {}, color = defaultColor }) => {
     color: color[colorIndex],
     percent: (item.value / totalBySeriersIndex[item.seriesIndex]) * 100 || 0,
   };
+};
+
+export const getWholeParams = ({ data = [], item = {} }) => {
+  const flatData = flatAndUnique(data);
+  let parentItem = item;
+  while (parentItem.parentId !== -1) {
+    parentItem = flatData[parentItem.parentId];
+  }
+
+  return parentItem;
 };
