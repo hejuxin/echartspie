@@ -16,6 +16,7 @@ import {
   formatterLegend,
   formatterTooltip,
   formatterData,
+  formatterSunData,
   flatAndUnique,
   getParams,
   isNum,
@@ -299,11 +300,15 @@ const Pie = (props) => {
     setLabelPos(labelObj);
 
     autoParams.init(autoInfo);
+
+    let newData = [];
     if (isPie) {
-      setDataSource(formatterData(dataArr));
+      newData = formatterData(dataArr);
     } else {
-      setDataSource([data]);
+      newData = [formatterSunData(data)];
     }
+
+    setDataSource(newData);
 
     setInit(true);
   };
@@ -451,6 +456,7 @@ const Pie = (props) => {
 
     const data = dataSource[seriesIndex];
     const flatData = flatAndUnique(data);
+    console.log(flatData, 'flatData');
     const params = getParams({
       data: isPie ? flatData : [''].concat(flatData),
       index: idxObj[seriesIndex],

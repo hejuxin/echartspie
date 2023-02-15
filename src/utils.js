@@ -171,6 +171,18 @@ export const formatterData = (data = [], seriesIndex = 0) => {
   });
 };
 
+export const formatterSunData = (data = [], id = -1) => {
+  return data.map((item, index) => {
+    const childrenArr = item.children || [];
+
+    return {
+      ...item,
+      parentId: id,
+      children: formatterSunData(childrenArr, index),
+    };
+  });
+};
+
 export const getParams = ({
   data = [],
   index = 0,
