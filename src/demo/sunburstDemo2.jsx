@@ -11,9 +11,9 @@ const SunburstDemo1 = () => {
         {
           value: 5,
           name: 'Grandpa11',
-          emphasis: {
-            focus: 'ancestor',
-          },
+          // emphasis: {
+          //   focus: 'ancestor',
+          // },
         },
       ],
     },
@@ -24,9 +24,9 @@ const SunburstDemo1 = () => {
         {
           value: 2,
           name: 'Nancy11',
-          emphasis: {
-            focus: 'ancestor',
-          },
+          // emphasis: {
+          //   focus: 'ancestor',
+          // },
         },
       ],
     },
@@ -53,8 +53,8 @@ const SunburstDemo1 = () => {
             emphasis: {
               // focus: 'descendant',
             },
-            nodeClick: false,
           }}
+          // isCanDrill
           centerBlockOption={{
             margin: 5,
             padding: 5,

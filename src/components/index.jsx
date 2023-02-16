@@ -42,6 +42,7 @@ const Pie = (props) => {
     wrapStyle = {},
     type = 'pie',
     highLightCallback = () => {},
+    nodeClick = false,
   } = props;
   const domRef = useRef();
   const chartRef = useRef();
@@ -187,6 +188,7 @@ const Pie = (props) => {
           ...seriesItem,
           type,
           data: dataItem,
+          nodeClick,
         };
 
         if (radiusItem) {
@@ -308,7 +310,13 @@ const Pie = (props) => {
     if (isPie) {
       newData = formatterData(dataArr);
     } else {
-      newData = [formatterSunData(data)];
+      newData = [
+        formatterSunData(data, {
+          emphasis: {
+            focus: 'ancestor',
+          },
+        }),
+      ];
     }
 
     setDataSource(newData);
@@ -432,21 +440,24 @@ const Pie = (props) => {
       ? _autoPlayOption.seriesIndex
       : Object.keys(autoParams.autoCurrent);
 
+    let isShowTip =
+      typeof _autoPlayOption.showTip === 'boolean'
+        ? _autoPlayOption.showTip
+        : true;
     if (!isPie) {
       seriesIndex = 0;
       const autoVal = dataIndex[seriesIndex];
       if (autoVal === -1) return;
       const id = dataSource[seriesIndex]?.[autoVal]?.id;
       dataIndex = id + 1;
+
+      isShowTip = false;
     }
 
     const _params = {
       seriesIndex,
       dataIndex,
-      isShowTip:
-        typeof _autoPlayOption.showTip === 'boolean'
-          ? _autoPlayOption.showTip
-          : true,
+      isShowTip,
     };
     handleHightlight(_params);
   }, [autoParams.autoCurrent]);
