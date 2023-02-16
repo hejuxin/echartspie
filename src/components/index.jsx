@@ -330,7 +330,35 @@ const Pie = (props) => {
     if (init) {
       chartRef.current.on('mouseover', (value) => {
         const { seriesIndex, dataIndex, data } = value;
-        console.log(value, 'mouseover');
+
+        if (!isPie) {
+          let wholeTree = getWholeParams({
+            data: dataSource[0],
+            item: data,
+          });
+
+          const index = (dataSource[0] || []).findIndex(
+            (item) => item.name === wholeTree.name
+          );
+
+          autoParams.removeInterval(() => {
+            const current = autoParams.getWip();
+            autoParams.setWip({
+              ...current,
+              [seriesIndex]: index,
+            });
+          });
+
+          autoParams.setAutoCurrent((obj) => {
+            return {
+              ...obj,
+              [seriesIndex]: index,
+            };
+          });
+
+          highLightCallback(data, wholeTree);
+          return;
+        }
 
         autoParams.removeInterval(() => {
           const current = autoParams.getWip();
@@ -356,14 +384,7 @@ const Pie = (props) => {
           };
         });
 
-        let wholeTree;
-        if (!isPie) {
-          wholeTree = getWholeParams({
-            data: dataSource[0],
-            item: data,
-          });
-        }
-        highLightCallback(data, wholeTree);
+        highLightCallback(data);
         // handleHightlight({ seriesIndex, dataIndex, isShowTip: true });
       });
       chartRef.current.on('mouseout', (value) => {
@@ -418,14 +439,16 @@ const Pie = (props) => {
       const id = dataSource[seriesIndex]?.[autoVal]?.id;
       dataIndex = id + 1;
     }
-    handleHightlight({
+
+    const _params = {
       seriesIndex,
       dataIndex,
       isShowTip:
         typeof _autoPlayOption.showTip === 'boolean'
           ? _autoPlayOption.showTip
           : true,
-    });
+    };
+    handleHightlight(_params);
   }, [autoParams.autoCurrent]);
 
   const handleLegendHover = (name) => {
@@ -504,10 +527,10 @@ const Pie = (props) => {
 
     if (!isPie && flatData.length) {
       const item = flatData.find((flatItem) => params.name === flatItem.name);
-      wholeTree = getWholeParams({
-        data,
-        item,
-      });
+      // wholeTree = getWholeParams({
+      //   data,
+      //   item,
+      // });
     }
 
     const { content } = centerBlockOption;
