@@ -51,7 +51,7 @@ const SunburstDemo1 = () => {
               show: false,
             },
             emphasis: {
-              // focus: 'descendant',
+              // focus: 'ancestor',
             },
           }}
           // isCanDrill
@@ -77,7 +77,7 @@ const SunburstDemo1 = () => {
             },
           }}
           highLightCallback={(params, v) => {
-            // console.log(params, v, 'highLightCallback');
+            console.log(params, v, 'highLightCallback');
           }}
           autoPlay
         />

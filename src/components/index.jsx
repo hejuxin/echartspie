@@ -230,6 +230,8 @@ const Pie = (props) => {
       }),
     };
 
+    console.log(dataInfo, 'dataInfo');
+
     chartRef.current.dispatchAction({
       type: 'downplay',
     });
@@ -237,13 +239,13 @@ const Pie = (props) => {
       type: 'hideTip',
     });
 
-    setTimeout(() => {
-      chartRef.current.dispatchAction({
-        // type: 'select',
-        type: 'highlight',
-        ...dataInfo,
-      });
-    }, 0);
+    // setTimeout(() => {
+    chartRef.current.dispatchAction({
+      // type: 'select',
+      type: 'highlight',
+      ...dataInfo,
+    });
+    // }, 0);
 
     if (isShowTip) {
       chartRef.current.dispatchAction({
@@ -331,6 +333,7 @@ const Pie = (props) => {
 
     return () => {
       autoParams.removeInterval();
+      myChart.dispose(domRef.current);
     };
   }, []);
 
@@ -398,9 +401,15 @@ const Pie = (props) => {
       chartRef.current.on('mouseout', (value) => {
         const { seriesIndex } = value;
         autoParams.setAutoCurrent((obj) => {
+          if (isPie) {
+            return {
+              ...obj,
+              [seriesIndex]: -1,
+            };
+          }
+
           return {
             ...obj,
-            [seriesIndex]: -1,
           };
         });
 
@@ -435,6 +444,7 @@ const Pie = (props) => {
 
   useUpdateLayoutEffect(() => {
     if (!_autoPlayOption.enable || !autoParams.autoIdx) return;
+    console.log('fffff');
     let dataIndex = autoParams.autoCurrent;
     let seriesIndex = autoParams.autoIdx
       ? _autoPlayOption.seriesIndex
