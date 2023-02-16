@@ -19,6 +19,7 @@ import {
   formatterSunData,
   flatAndUnique,
   getParams,
+  getParams2,
   getWholeParams,
   isNum,
 } from '../utils';
@@ -218,7 +219,35 @@ const Pie = (props) => {
     });
   };
   const handleHightlight = ({ seriesIndex, dataIndex, isShowTip = false }) => {
-    // console.log(seriesIndex, dataIndex, 'dataInfo');
+    const flatData = flatAndUnique(dataSource);
+    let wholeTree;
+    let item;
+    let params;
+    if (!isPie) {
+      if (dataIndex > 0) {
+        item = flatData[dataIndex - 1];
+        wholeTree = getWholeParams({
+          data: dataSource[0],
+          item,
+        });
+        params = getParams2({
+          data: dataSource[0],
+          item,
+        });
+        params = {
+          ...params,
+          ...item,
+        };
+      }
+    } else {
+      item = flatData[dataIndex];
+      params = getParams2({
+        data: dataSource[0],
+        item,
+      });
+    }
+
+    highLightCallback(params, wholeTree);
 
     const seriesIndexArr = isNum(seriesIndex) ? [seriesIndex] : seriesIndex;
     const dataInfo = {
@@ -229,8 +258,6 @@ const Pie = (props) => {
         };
       }),
     };
-
-    console.log(dataInfo, 'dataInfo');
 
     chartRef.current.dispatchAction({
       type: 'downplay',
@@ -367,7 +394,9 @@ const Pie = (props) => {
             };
           });
 
-          highLightCallback(data, wholeTree);
+          if (!_autoPlayOption.enable) {
+            highLightCallback(data, wholeTree);
+          }
           return;
         }
 
@@ -395,7 +424,9 @@ const Pie = (props) => {
           };
         });
 
-        highLightCallback(data);
+        if (!_autoPlayOption.enable) {
+          highLightCallback(data);
+        }
         // handleHightlight({ seriesIndex, dataIndex, isShowTip: true });
       });
       chartRef.current.on('mouseout', (value) => {
@@ -444,7 +475,6 @@ const Pie = (props) => {
 
   useUpdateLayoutEffect(() => {
     if (!_autoPlayOption.enable || !autoParams.autoIdx) return;
-    console.log('fffff');
     let dataIndex = autoParams.autoCurrent;
     let seriesIndex = autoParams.autoIdx
       ? _autoPlayOption.seriesIndex

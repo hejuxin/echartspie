@@ -185,9 +185,10 @@ export const formatterSunData = (data = [], option = {}) => {
         ...item,
         parentId: id,
         id: itemId,
-        children: loop({ arr: childrenArr, id: itemId, option }),
+        children: loop({ arr: childrenArr, id: itemId, ops: option }),
         show: true,
         ...ops,
+        seriesIndex: 0,
       };
     });
   };
@@ -241,8 +242,8 @@ export const isNum = (value) => typeof value === 'number';
 export const getParams2 = ({ data = [], item = {}, color = defaultColor }) => {
   let totalBySeriersIndex = {};
 
-  data.forEach((dataItem) => {
-    const { seriesIndex } = dataItem;
+  data.forEach((dataItem, index) => {
+    const seriesIndex = dataItem.seriesIndex;
     if (!totalBySeriersIndex[seriesIndex]) {
       totalBySeriersIndex[seriesIndex] = 0;
     }
