@@ -186,6 +186,7 @@ export const formatterSunData = (data = [], id = -1) => {
         parentId: id,
         id: itemId,
         children: loop(childrenArr, itemId),
+        show: true,
       };
     });
   };
@@ -269,6 +270,7 @@ export const getParams2 = ({ data = [], item = {}, color = defaultColor }) => {
 export const getWholeParams = ({ data = [], item = {} }) => {
   const flatData = flatAndUnique(data);
   let parentItem = item;
+  console.log(parentItem, 'parentItem', item);
   while (parentItem.parentId !== -1) {
     parentItem = flatData[parentItem.parentId];
   }

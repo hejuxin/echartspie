@@ -61,7 +61,7 @@ const SunburstDemo1 = () => {
             border: '1px solid #DBDFF1',
             radius: '30%',
             content: (params, v) => {
-              console.log(params, v, 'params');
+              // console.log(params, v, 'centerBlockOption');
               return (
                 <div
                   style={{
@@ -77,8 +77,9 @@ const SunburstDemo1 = () => {
             },
           }}
           highLightCallback={(params, v) => {
-            console.log(params, v, 'highLightCallback');
+            // console.log(params, v, 'highLightCallback');
           }}
+          autoPlay
         />
       </div>
     </>

@@ -209,13 +209,15 @@ const Pie = (props) => {
   }, [autoPlay, autoPlayOption]);
 
   const createInterval = () => {
-    console.log('createInterval');
+    // console.log('createInterval', dataSource);
     autoParams.createInterval({
       ..._autoPlayOption,
       dataSource,
     });
   };
   const handleHightlight = ({ seriesIndex, dataIndex, isShowTip = false }) => {
+    // console.log(seriesIndex, dataIndex, 'dataInfo');
+
     const seriesIndexArr = isNum(seriesIndex) ? [seriesIndex] : seriesIndex;
     const dataInfo = {
       batch: seriesIndexArr.map((item) => {
@@ -225,8 +227,6 @@ const Pie = (props) => {
         };
       }),
     };
-
-    console.log(dataInfo, 'dataInfo');
 
     chartRef.current.dispatchAction({
       type: 'downplay',
@@ -406,11 +406,21 @@ const Pie = (props) => {
 
   useUpdateLayoutEffect(() => {
     if (!_autoPlayOption.enable || !autoParams.autoIdx) return;
+    let dataIndex = autoParams.autoCurrent;
+    let seriesIndex = autoParams.autoIdx
+      ? _autoPlayOption.seriesIndex
+      : Object.keys(autoParams.autoCurrent);
+
+    if (!isPie) {
+      seriesIndex = 0;
+      const autoVal = dataIndex[seriesIndex];
+      if (autoVal === -1) return;
+      const id = dataSource[seriesIndex]?.[autoVal]?.id;
+      dataIndex = id + 1;
+    }
     handleHightlight({
-      seriesIndex: autoParams.autoIdx
-        ? _autoPlayOption.seriesIndex
-        : Object.keys(autoParams.autoCurrent),
-      dataIndex: autoParams.autoCurrent,
+      seriesIndex,
+      dataIndex,
       isShowTip:
         typeof _autoPlayOption.showTip === 'boolean'
           ? _autoPlayOption.showTip
@@ -470,11 +480,25 @@ const Pie = (props) => {
 
     const data = dataSource[seriesIndex];
     const flatData = flatAndUnique(data);
-    const params = getParams({
-      data: isPie ? flatData : [''].concat(flatData),
-      index: idxObj[seriesIndex],
-      color,
-    });
+
+    let params = {};
+    if (idxObj[seriesIndex] !== -1) {
+      let data = flatData;
+      let index = idxObj[seriesIndex];
+
+      if (!isPie) {
+        data = [''].concat(flatData);
+
+        const autoVal = idxObj[seriesIndex];
+        const id = dataSource[seriesIndex]?.[autoVal]?.id;
+        index = id + 1;
+      }
+      params = getParams({
+        data,
+        index,
+        color,
+      });
+    }
 
     let wholeTree;
 
