@@ -244,10 +244,11 @@ export const getParams2 = ({ data = [], item = {}, color = defaultColor }) => {
 
   data.forEach((dataItem, index) => {
     const seriesIndex = dataItem.seriesIndex;
+    const value = Number(dataItem.value);
     if (!totalBySeriersIndex[seriesIndex]) {
       totalBySeriersIndex[seriesIndex] = 0;
     }
-    totalBySeriersIndex[seriesIndex] += dataItem.value;
+    totalBySeriersIndex[seriesIndex] += value;
   });
 
   const flatData = flatAndUnique(data);
@@ -265,7 +266,8 @@ export const getParams2 = ({ data = [], item = {}, color = defaultColor }) => {
     value: item.value,
     dataIndex: item.dataIndex,
     color: color[colorIndex],
-    percent: (item.value / totalBySeriersIndex[item.seriesIndex]) * 100 || 0,
+    percent:
+      (Number(item.value) / totalBySeriersIndex[item.seriesIndex]) * 100 || 0,
   };
 };
 

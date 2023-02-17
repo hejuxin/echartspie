@@ -6,7 +6,7 @@ import React, {
   useCallback,
 } from 'react';
 import * as echarts from 'echarts';
-import { useUpdateLayoutEffect } from 'ahooks';
+import { useMount, useUpdateLayoutEffect } from 'ahooks';
 
 import defaultOption, {
   defaultColor,
@@ -353,10 +353,19 @@ const Pie = (props) => {
     setInit(true);
   };
 
-  useLayoutEffect(() => {
+  useMount(() => {
     const myChart = echarts.init(domRef.current);
     chartRef.current = myChart;
     handleInit();
+
+    // window.addEventListener('resize', () => {
+    //   if (myChart && myChart.dispose) {
+    //     myChart.dispose(domRef.current);
+    //     const newChart = echarts.init(domRef.current);
+    //     chartRef.current = newChart;
+    //   }
+    //   handleInit();
+    // });
 
     return () => {
       autoParams.removeInterval();
@@ -492,6 +501,8 @@ const Pie = (props) => {
       dataIndex = id + 1;
 
       isShowTip = false;
+    } else {
+      dataIndex = autoParams.autoCurrent;
     }
 
     const _params = {
