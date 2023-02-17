@@ -27,6 +27,10 @@ const AutoDemo1 = () => {
           autoPlay
           autoPlayOption={{
             showTip: false,
+            startOps: {
+              seriesIndex: [0],
+              dataIndex: [0],
+            },
           }}
         />
       </div>

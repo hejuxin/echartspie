@@ -280,3 +280,17 @@ export const getWholeParams = ({ data = [], item = {} }) => {
 
   return parentItem;
 };
+
+export const formatAutoOpsData = (data) => {
+  let arr = [];
+
+  if (typeof data === 'number') {
+    arr = [data];
+  } else if (Array.isArray(data)) {
+    arr = data;
+  } else {
+    arr = [];
+  }
+
+  return arr;
+};

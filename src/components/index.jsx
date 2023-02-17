@@ -6,7 +6,7 @@ import React, {
   useCallback,
 } from 'react';
 import * as echarts from 'echarts';
-import { useMount, useUpdateLayoutEffect } from 'ahooks';
+import { useMount, useUpdateLayoutEffect, useUpdateEffect } from 'ahooks';
 
 import defaultOption, {
   defaultColor,
@@ -22,6 +22,7 @@ import {
   getParams2,
   getWholeParams,
   isNum,
+  formatAutoOpsData,
 } from '../utils';
 import { useAutoParams } from '../hooks';
 import LabelBlock from './LabelBlock';
@@ -211,6 +212,18 @@ const Pie = (props) => {
     };
   }, [autoPlay, autoPlayOption]);
 
+  const autoStartInfo = useMemo(() => {
+    const autoStartOps = autoPlayOption.startOps || {};
+    if (autoStartOps.dataIndex) {
+      return {
+        seriesIndex: formatAutoOpsData(autoStartOps?.seriesIndex),
+        dataIndex: formatAutoOpsData(autoStartOps?.dataIndex),
+      };
+    }
+
+    return {};
+  }, [autoPlayOption]);
+
   const createInterval = () => {
     // console.log('createInterval', dataSource);
     autoParams.createInterval({
@@ -258,7 +271,6 @@ const Pie = (props) => {
         };
       }),
     };
-
     chartRef.current.dispatchAction({
       type: 'downplay',
     });
@@ -266,13 +278,13 @@ const Pie = (props) => {
       type: 'hideTip',
     });
 
-    // setTimeout(() => {
-    chartRef.current.dispatchAction({
-      // type: 'select',
-      type: 'highlight',
-      ...dataInfo,
-    });
-    // }, 0);
+    setTimeout(() => {
+      chartRef.current.dispatchAction({
+        // type: 'select',
+        type: 'highlight',
+        ...dataInfo,
+      });
+    }, 0);
 
     if (isShowTip) {
       chartRef.current.dispatchAction({
@@ -283,15 +295,8 @@ const Pie = (props) => {
   };
 
   const handleInit = () => {
-    const autoPlaySeries = autoPlayOption.seriesIndex;
-    let _autoSeriesArr = [];
-    if (typeof autoPlaySeries === 'number') {
-      _autoSeriesArr = [autoPlaySeries];
-    } else if (Array.isArray(autoPlaySeries)) {
-      _autoSeriesArr = autoPlaySeries;
-    } else {
-      _autoSeriesArr = [];
-    }
+    let _autoSeriesArr = formatAutoOpsData(autoPlayOption.seriesIndex);
+
     const radiusArr = [];
     const dataArr = [];
     const autoInfo = {};
@@ -307,7 +312,14 @@ const Pie = (props) => {
         labelObj[0] = [];
 
         if (!_autoSeriesArr.length) {
-          autoInfo[0] = -1;
+          // dataIndex 存在才有意义
+          if (autoStartInfo.dataIndex) {
+            autoInfo[0] = isNum(autoStartInfo.dataIndex[0])
+              ? autoStartInfo.dataIndex[0]
+              : -1;
+          } else {
+            autoInfo[0] = -1;
+          }
         }
         // autoInfo[0] = -1;
       } else if (typeof radius === 'object') {
@@ -318,7 +330,30 @@ const Pie = (props) => {
           labelObj[key] = [];
 
           if (!_autoSeriesArr.length) {
-            autoInfo[key] = -1;
+            const { seriesIndex: sIdx = [], dataIndex: dIdx } = autoStartInfo;
+            // 先判断轮播的series有没有start。
+            // 1. 如果有，则取dataIndex中对应位置的data。
+            //  - 若该位置没有，则代表两个Index长度不同。此时取dataIndex最后一项。最后一项也没有则为-1
+            // 2. 若没有，则代表没有start。直接-1
+            if (sIdx && dIdx) {
+              const autoIdx = sIdx.indexOf(key);
+              if (autoIdx > -1) {
+                autoInfo[key] = isNum(dIdx[autoIdx])
+                  ? dIdx[autoIdx]
+                  : isNum(dIdx[dIdx.length - 1])
+                  ? dIdx[dIdx.length - 1]
+                  : -1;
+              } else {
+                autoInfo[key] = -1;
+              }
+            } else if (dIdx) {
+              // 若没有series。直接取取dataIndex中对应位置的data。
+              autoInfo[key] = isNum(dIdx[key]) ? dIdx[key] : -1;
+            } else {
+              autoInfo[key] = -1;
+            }
+
+            // autoInfo[key] = 0;
           }
           // autoInfo[key] = -1;
         });
@@ -327,7 +362,28 @@ const Pie = (props) => {
 
     if (_autoSeriesArr.length) {
       _autoSeriesArr.forEach((key) => {
-        autoInfo[key] = -1;
+        const { seriesIndex: sIdx = [], dataIndex: dIdx } = autoStartInfo;
+        // 先判断轮播的series有没有start。
+        // 1. 如果有，则取dataIndex中对应位置的data。
+        //  - 若该位置没有，则代表两个Index长度不同。此时取dataIndex最后一项。最后一项也没有则为-1
+        // 2. 若没有，则代表没有start。直接-1
+        if (sIdx && dIdx) {
+          const autoIdx = sIdx.indexOf(key);
+          if (autoIdx > -1) {
+            autoInfo[key] = isNum(dIdx[autoIdx])
+              ? dIdx[autoIdx]
+              : isNum(dIdx[dIdx.length - 1])
+              ? dIdx[dIdx.length - 1]
+              : -1;
+          } else {
+            autoInfo[key] = -1;
+          }
+        } else if (dIdx) {
+          // 若没有series。直接取取dataIndex中对应位置的data。
+          autoInfo[key] = isNum(dIdx[key]) ? dIdx[key] : -1;
+        } else {
+          autoInfo[key] = -1;
+        }
       });
     }
     setRadiusSource(radiusArr);
@@ -375,6 +431,15 @@ const Pie = (props) => {
 
   useUpdateLayoutEffect(() => {
     if (init) {
+      let _autoSeriesArr = formatAutoOpsData(autoPlayOption.seriesIndex);
+      const { seriesIndex: sIdx, dataIndex: dIdx } = autoStartInfo;
+      if (dIdx) {
+        handleHightlight({
+          seriesIndex: sIdx || _autoSeriesArr || [],
+          dataIndex: dIdx || [],
+        });
+      }
+
       chartRef.current.on('mouseover', (value) => {
         const { seriesIndex, dataIndex, data } = value;
 
