@@ -22,9 +22,6 @@ const DoughnutDemo2 = () => {
             show: false,
           },
           emphasis: {},
-          tooltip: {
-            show: false,
-          },
         }}
         centerBlockOption={{
           margin: 5,
@@ -35,7 +32,7 @@ const DoughnutDemo2 = () => {
           backgroundImage:
             'https://t7.baidu.com/it/u=2582370511,530426427&fm=193&f=GIF',
           content: (params) => {
-            return 'ffffffffff';
+            return <div style={{ color: params.color }}>ffffffffff</div>;
           },
         }}
       />

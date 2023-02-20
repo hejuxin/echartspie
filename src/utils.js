@@ -87,6 +87,9 @@ export const flatAndUnique = (arr = []) => {
         loop(item);
       } else if (!map.get(item)) {
         map.set(item);
+        if (item.children) {
+          loop(item.children);
+        }
       }
     });
   };
@@ -95,14 +98,41 @@ export const flatAndUnique = (arr = []) => {
   return [...map.keys()];
 };
 
-export const formatterTooltip = (option = {}) => {
-  const { content = '' } = option;
+const getTooltipPosition = (position, ...args) => {
+  if (!position) return null;
+  if (typeof position === 'string') {
+    return position;
+  } else if (typeof position === 'function') {
+    return position(...args);
+  } else if (Array.isArray(position)) {
+    return position;
+  } else if (typeof position === 'object') {
+    const { mode, x, y } = position;
+    if (mode !== 'fixed') return null;
+    return [x || 0, y || 0];
+  }
+};
+
+export const formatterTooltip = (option = {}, autoInfo = {}) => {
+  const { content = '', position } = option;
+  const { seriesIndex = [] } = autoInfo;
+
   const dom = document.createElement('div');
   const root = createRoot(dom);
+
+  const ops = {
+    ...defaultOption.tooltip,
+    ...option,
+  };
+  if (seriesIndex.length > 1) {
+    ops.show = false;
+  }
   if (!content) {
     return {
-      ...defaultOption.tooltip,
-      ...option,
+      ...ops,
+      position: (point, params, dom, rect, size) => {
+        return getTooltipPosition(position, [point, params, dom, rect, size]);
+      },
     };
   }
 
@@ -121,6 +151,9 @@ export const formatterTooltip = (option = {}) => {
 
       return content;
     },
+    position: (point, params, dom, rect, size) => {
+      return getTooltipPosition(position, [point, params, dom, rect, size]);
+    },
   };
 };
 
@@ -136,6 +169,31 @@ export const formatterData = (data = [], seriesIndex = 0) => {
       seriesIndex,
     };
   });
+};
+
+export const formatterSunData = (data = [], option = {}) => {
+  const flatData = flatAndUnique(data);
+  const loop = ({ arr = [], id = -1, ops }) => {
+    if (!arr.length) return;
+    return arr.map((item, index) => {
+      const childrenArr = item.children || [];
+
+      const itemId = flatData.findIndex(
+        (flatItem) => item.name === flatItem.name
+      );
+      return {
+        ...item,
+        parentId: id,
+        id: itemId,
+        children: loop({ arr: childrenArr, id: itemId, ops: option }),
+        show: true,
+        ...ops,
+        seriesIndex: 0,
+      };
+    });
+  };
+
+  return loop({ arr: data });
 };
 
 export const getParams = ({
@@ -180,3 +238,59 @@ export const getParams = ({
 };
 
 export const isNum = (value) => typeof value === 'number';
+
+export const getParams2 = ({ data = [], item = {}, color = defaultColor }) => {
+  let totalBySeriersIndex = {};
+
+  data.forEach((dataItem, index) => {
+    const seriesIndex = dataItem.seriesIndex;
+    const value = Number(dataItem.value);
+    if (!totalBySeriersIndex[seriesIndex]) {
+      totalBySeriersIndex[seriesIndex] = 0;
+    }
+    totalBySeriersIndex[seriesIndex] += value;
+  });
+
+  const flatData = flatAndUnique(data);
+  // const _colorIndex = flatData.findIndex(flatItem => flatItem.seriesIndex === item.seriesIndex && flatItem.dataIndex === item.dataIndex);
+  // const colorIndexByName = flatData.findIndex(flatItem => flatItem.name === item.name);
+  let colorIndex = flatData.findIndex(
+    (flatItem) => flatItem.name === item.name
+  );
+  if (colorIndex > color.length) {
+    colorIndex = colorIndex % color.length;
+  }
+
+  return {
+    name: item.name,
+    value: item.value,
+    dataIndex: item.dataIndex,
+    color: color[colorIndex],
+    percent:
+      (Number(item.value) / totalBySeriersIndex[item.seriesIndex]) * 100 || 0,
+  };
+};
+
+export const getWholeParams = ({ data = [], item = {} }) => {
+  const flatData = flatAndUnique(data);
+  let parentItem = item;
+  while (parentItem.parentId !== -1) {
+    parentItem = flatData[parentItem.parentId];
+  }
+
+  return parentItem;
+};
+
+export const formatAutoOpsData = (data) => {
+  let arr = [];
+
+  if (typeof data === 'number') {
+    arr = [data];
+  } else if (Array.isArray(data)) {
+    arr = data;
+  } else {
+    arr = [];
+  }
+
+  return arr;
+};

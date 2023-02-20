@@ -2,10 +2,10 @@ import React from 'react';
 import { defaultData } from '../components/defaultOption';
 import Pie from '../components';
 
-const LabelDemo2 = () => {
+const LabelDemo4 = () => {
   return (
     <>
-      <h3>label在线上</h3>
+      <h3>label内容省略</h3>
       <div style={{ width: 300, height: 300 }}>
         <Pie
           data={defaultData}
@@ -27,18 +27,26 @@ const LabelDemo2 = () => {
               show: true,
               content: (params) => {
                 return (
-                  <div>
-                    <div>{params.name}</div>
-                    {/* <div
+                  <div
                     style={{
-                      width: '100%',
-                      height: 1,
-                      background: params.color,
+                      display: 'flex',
+                      maxWidth: '100%',
+                      overflow: 'hidden',
+                      fontSize: 12,
+                      paddingBottom: 15,
                     }}
-                  ></div> */}
-                    <div>
-                      {params.value}个 {params.percent?.toFixed(2)}
+                  >
+                    <div
+                      style={{
+                        maxWidth: '50%',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                      }}
+                    >
+                      {params.name}
                     </div>
+                    <div style={{ color: params.color }}>{params.value}个</div>
+                    <div>{params.percent?.toFixed(2)}</div>
                   </div>
                 );
               },
@@ -49,6 +57,9 @@ const LabelDemo2 = () => {
             },
             labelLine: {
               // show: false,
+              lineStyle: {
+                cap: 'round',
+              },
             },
             emphasis: {},
           }}
@@ -58,4 +69,4 @@ const LabelDemo2 = () => {
   );
 };
 
-export default LabelDemo2;
+export default LabelDemo4;

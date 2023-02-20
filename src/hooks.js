@@ -39,15 +39,16 @@ export function useAutoParams() {
     if (!enable) return;
     timerRef.current = setInterval(() => {
       const wip = getWip();
+      let _wip = wip;
       Object.keys(wip).forEach((key) => {
         const data = (dataSource[key] || []).filter((item) => item.show);
         const max = data.length - 1;
         // 判断是否超过数组长度
         let value = wip[key] >= max ? 0 : wip[key] + 1;
-        setWip({
-          ...wip,
-          [key]: value,
-        });
+        _wip[key] = value;
+      });
+      setWip({
+        ..._wip,
       });
 
       alernate();

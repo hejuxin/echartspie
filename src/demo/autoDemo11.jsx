@@ -2,28 +2,16 @@ import React from 'react';
 import { defaultData } from '../components/defaultOption';
 import Pie from '../components';
 
-const LegendDemo2 = () => {
+const AutoDemo1 = () => {
   return (
     <>
-      <h3>支持自定义传入react元素</h3>
+      <h3>普通轮播 轮播时不出现tooltip</h3>
       <div style={{ width: 300, height: 300 }}>
         <Pie
           data={defaultData}
           legendOption={{
             bottom: 0,
-            right: 0,
             icon: 'circle',
-            orient: 'vertical',
-            content: (params) => {
-              return (
-                <div style={{ fontSize: 12 }}>
-                  <div style={{ fontSize: 14 }}>{params.name}</div>
-                  <div>
-                    {params.value} {`${params.percent?.toFixed(2)}%`}
-                  </div>
-                </div>
-              );
-            },
           }}
           seriesOption={{
             itemStyle: {
@@ -34,10 +22,15 @@ const LegendDemo2 = () => {
             label: {
               show: false,
             },
-            tooltip: {
-              show: false,
-            },
             emphasis: {},
+          }}
+          autoPlay
+          autoPlayOption={{
+            showTip: false,
+            startOps: {
+              seriesIndex: [0],
+              dataIndex: [0],
+            },
           }}
         />
       </div>
@@ -45,4 +38,4 @@ const LegendDemo2 = () => {
   );
 };
 
-export default LegendDemo2;
+export default AutoDemo1;
