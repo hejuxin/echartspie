@@ -119,7 +119,7 @@ const LabelBlock = (props) => {
           maxWidth = maxWidth - distance;
         }
 
-        const capStyle = {
+        const commonCapStyle = {
           position: 'absolute',
           left: endPosX < 0 ? 0 : endPosX > chartsWidth ? chartsWidth : endPosX,
           top: endPosY,
@@ -133,24 +133,16 @@ const LabelBlock = (props) => {
             {isShowActive ? (
               <div
                 style={{
-                  ...capStyle,
-                  borderRadius: activeLabel.cap === 'round' ? '50%' : 0,
-                  width:
-                    !activeLabel.cap || activeLabel.cap === 'butt' ? 0 : 10,
-                  height:
-                    !activeLabel.cap || activeLabel.cap === 'butt' ? 0 : 10,
+                  ...commonCapStyle,
+                  ...(activeLabel.capStyle || {}),
                 }}
               ></div>
             ) : (
               isShowLabel && (
                 <div
                   style={{
-                    ...capStyle,
-                    borderRadius: normalLabel.cap === 'round' ? '50%' : 0,
-                    width:
-                      !normalLabel.cap || normalLabel.cap === 'butt' ? 0 : 10,
-                    height:
-                      !normalLabel.cap || normalLabel.cap === 'butt' ? 0 : 10,
+                    ...commonCapStyle,
+                    ...(normalLabel.capStyle || {}),
                   }}
                 ></div>
               )

@@ -32,6 +32,9 @@ const AutoDemo1 = () => {
               dataIndex: [0],
             },
           }}
+          highLightCallback={(parmas) => {
+            console.log('p', parmas);
+          }}
         />
       </div>
     </>

@@ -45,6 +45,7 @@ const Pie = (props) => {
     type = 'pie',
     highLightCallback = () => {},
     nodeClick = false,
+    highLightOption = {},
   } = props;
   const domRef = useRef();
   const chartRef = useRef();
@@ -253,6 +254,7 @@ const Pie = (props) => {
         };
       }
     } else {
+      dataIndex = dataIndex[seriesIndex];
       item = flatData[dataIndex];
       params = getParams2({
         data: dataSource[0],
@@ -505,18 +507,22 @@ const Pie = (props) => {
       });
       chartRef.current.on('mouseout', (value) => {
         const { seriesIndex } = value;
-        autoParams.setAutoCurrent((obj) => {
-          if (isPie) {
+        if (isPie && !!highLightOption.isOutDown) {
+          autoParams.setAutoCurrent((obj) => {
             return {
               ...obj,
               [seriesIndex]: -1,
             };
-          }
-
-          return {
-            ...obj,
-          };
-        });
+          });
+        }
+        // autoParams.setAutoCurrent((obj) => {
+        //   if (isPie && !!highLightOption.isOutDown) {
+        //     return {
+        //       ...obj,
+        //       [seriesIndex]: -1,
+        //     };
+        //   }
+        // });
 
         // todo
         // if (_autoPlayOption.enable) {
@@ -694,11 +700,11 @@ const Pie = (props) => {
         const labelOption = {
           normal: {
             ...seriesItem.label,
-            cap: seriesItem.labelLine?.cap,
+            capStyle: seriesItem.labelLine?.capStyle,
           },
           active: {
             ...seriesItem.emphasis?.label,
-            cap: seriesItem.emphasis?.labelLine?.cap,
+            capStyle: seriesItem.emphasis?.labelLine?.capStyle,
           },
         };
         return (
