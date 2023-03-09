@@ -43,7 +43,7 @@ const Pie = (props) => {
     centerBlockOption = {},
     wrapStyle = {},
     type = 'pie',
-    highLightCallback = () => {},
+    highLightCallback = () => { },
     nodeClick = false,
     highLightOption = {},
   } = props;
@@ -55,6 +55,8 @@ const Pie = (props) => {
   const [dataSource, setDataSource] = useState([]);
   const [labelPos, setLabelPos] = useState({});
   const [radiusSource, setRadiusSource] = useState([]);
+
+  const [highInfo, setHighInfo] = useState({});
 
   const isPie = useMemo(() => {
     return type !== 'sunburst';
@@ -225,11 +227,11 @@ const Pie = (props) => {
     return {};
   }, [autoPlayOption]);
 
-  const createInterval = () => {
+  const createInterval = (_data) => {
     // console.log('createInterval', dataSource);
     autoParams.createInterval({
       ..._autoPlayOption,
-      dataSource,
+      dataSource: _data || dataSource,
     });
   };
   const handleHightlight = ({ seriesIndex, dataIndex, isShowTip = false }) => {
@@ -267,6 +269,7 @@ const Pie = (props) => {
     const seriesIndexArr = isNum(seriesIndex) ? [seriesIndex] : seriesIndex;
     const dataInfo = {
       batch: seriesIndexArr.map((item) => {
+        console.log(item, dataIndex, 'dataInfo')
         return {
           seriesIndex: item,
           dataIndex: isNum(dataIndex) ? dataIndex : dataIndex[item],
@@ -343,8 +346,8 @@ const Pie = (props) => {
                 autoInfo[key] = isNum(dIdx[autoIdx])
                   ? dIdx[autoIdx]
                   : isNum(dIdx[dIdx.length - 1])
-                  ? dIdx[dIdx.length - 1]
-                  : -1;
+                    ? dIdx[dIdx.length - 1]
+                    : -1;
               } else {
                 autoInfo[key] = -1;
               }
@@ -375,8 +378,8 @@ const Pie = (props) => {
             autoInfo[key] = isNum(dIdx[autoIdx])
               ? dIdx[autoIdx]
               : isNum(dIdx[dIdx.length - 1])
-              ? dIdx[dIdx.length - 1]
-              : -1;
+                ? dIdx[dIdx.length - 1]
+                : -1;
           } else {
             autoInfo[key] = -1;
           }
@@ -476,13 +479,18 @@ const Pie = (props) => {
           return;
         }
 
-        autoParams.removeInterval(() => {
-          const current = autoParams.getWip();
-          autoParams.setWip({
-            ...current,
-            [seriesIndex]: dataIndex,
+        // 当自动轮播时，停下自动轮播。并将当前值赋值给轮播的wip作为下次开始轮播的起点
+        if (_autoPlayOption.enable) {
+          autoParams.removeInterval(() => {
+            const current = autoParams.getWip();
+            autoParams.setWip({
+              ...current,
+              [seriesIndex]: dataIndex,
+            });
           });
-        });
+        }
+
+
 
         // todo
         // if (_autoPlayOption.enable) {
@@ -493,27 +501,39 @@ const Pie = (props) => {
         //     };
         //   });
         // }
-        autoParams.setAutoCurrent((obj) => {
-          return {
-            ...obj,
-            [seriesIndex]: dataIndex,
-          };
-        });
 
-        if (!_autoPlayOption.enable) {
-          highLightCallback(data);
-        }
+        // 不管是否有自动，都对highInfo进行赋值
+        setHighInfo({
+          ...highInfo,
+          [seriesIndex]: dataIndex,
+        })
+        // autoParams.setAutoCurrent((obj) => {
+        //   return {
+        //     ...obj,
+        //     [seriesIndex]: dataIndex,
+        //   };
+        // });
+
+        // if (!_autoPlayOption.enable) {
+        //   highLightCallback(data);
+        // }
         // handleHightlight({ seriesIndex, dataIndex, isShowTip: true });
       });
       chartRef.current.on('mouseout', (value) => {
         const { seriesIndex } = value;
+        // 若要保持，则不初始化为-1
         if (isPie && !!highLightOption.isOutDown) {
-          autoParams.setAutoCurrent((obj) => {
-            return {
-              ...obj,
-              [seriesIndex]: -1,
-            };
-          });
+          // autoParams.setAutoCurrent((obj) => {
+          //   return {
+          //     ...obj,
+          //     [seriesIndex]: -1,
+          //   };
+          // });
+          setHighInfo({
+            ...highInfo,
+            [seriesIndex]: -1,
+          })
+
         }
         // autoParams.setAutoCurrent((obj) => {
         //   if (isPie && !!highLightOption.isOutDown) {
@@ -528,7 +548,11 @@ const Pie = (props) => {
         // if (_autoPlayOption.enable) {
         //   createInterval();
         // }
-        createInterval();
+        // createInterval();
+        // 若有轮播，开启轮播
+        if (_autoPlayOption.enable) {
+          createInterval();
+        }
       });
 
       chartRef.current.on('legendselectchanged', (value) => {
@@ -550,7 +574,7 @@ const Pie = (props) => {
     const ops = getOps(dataSource);
     chartOption.current = ops;
     chartRef.current.setOption(ops);
-    createInterval();
+    createInterval(dataSource);
   }, [dataSource]);
 
   useUpdateLayoutEffect(() => {
@@ -581,11 +605,15 @@ const Pie = (props) => {
       dataIndex,
       isShowTip,
     };
+    console.log(_params, '_params')
     handleHightlight(_params);
   }, [autoParams.autoCurrent]);
 
   const handleLegendHover = (name) => {
-    autoParams.removeInterval();
+    if (_autoPlayOption.enable) {
+      autoParams.removeInterval();
+    }
+    console.log('handleLegendHover')
 
     const legendObj = {};
     flatAndUnique(dataSource).forEach((item) => {
@@ -597,17 +625,26 @@ const Pie = (props) => {
       legendObj[name][seriesIndex] = dataIndex;
     });
     const legendItem = legendObj[name];
-    handleHightlight({
-      seriesIndex: Object.keys(legendItem),
-      dataIndex: legendItem,
-    });
+    // handleHightlight({
+    //   seriesIndex: Object.keys(legendItem),
+    //   dataIndex: legendItem,
+    // });
+    // 3.5
+    setHighInfo({
+      ...highInfo,
+      ...legendItem
+    })
   };
 
   const handleLegendLeave = () => {
     chartRef.current.dispatchAction({
       type: 'downplay',
     });
-    createInterval();
+    console.log('handleLegendLeave')
+    // createInterval();
+    if (_autoPlayOption.enable) {
+      createInterval();
+    }
   };
 
   const handleLegendClick = (name) => {

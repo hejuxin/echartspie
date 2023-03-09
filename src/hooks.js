@@ -41,10 +41,26 @@ export function useAutoParams() {
       const wip = getWip();
       let _wip = wip;
       Object.keys(wip).forEach((key) => {
-        const data = (dataSource[key] || []).filter((item) => item.show);
-        const max = data.length - 1;
-        // 判断是否超过数组长度
-        let value = wip[key] >= max ? 0 : wip[key] + 1;
+        // const data = (dataSource[key] || []).filter((item) => item.show);
+        // const max = data.length - 1;
+        // // 判断是否超过数组长度
+        // let value = wip[key] >= max ? 0 : wip[key] + 1;
+        const dataArr = (dataSource[key] || []).map(item => {
+          if (item.show) return item.dataIndex;
+        }).filter(Boolean);
+        console.log(dataArr, 'dataArr')
+        let value = dataArr?.[0];
+        const nowIndex = dataArr.indexOf(wip[key]);
+        if (nowIndex > -1) {
+          if (nowIndex >= dataArr.length - 1) {
+            value = dataArr?.[0];
+          } else {
+            value = dataArr[nowIndex + 1];
+          }
+        } else {
+          value = dataArr?.[0];
+        }
+
         _wip[key] = value;
       });
       setWip({

@@ -39,6 +39,7 @@ const LegendDemo2 = () => {
             },
             emphasis: {},
           }}
+          autoPlay
         />
       </div>
     </>

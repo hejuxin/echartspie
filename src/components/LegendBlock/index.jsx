@@ -1,5 +1,6 @@
 import React, { useMemo } from 'react';
 import { getParams, isNum } from '../../utils';
+import LegendItem from './item';
 import './index.css';
 // import styles from './index.module.scss'
 const LegendBlock = (props) => {
@@ -45,17 +46,16 @@ const LegendBlock = (props) => {
         const params = getParams({ data: dataSource, index });
         const { name, show } = item;
         return (
-          <div
-            onMouseOver={() => handleLegendHover(name)}
-            onMouseOut={() => handleLegendLeave()}
-            onClick={() => handleLegendClick(name)}
-            // className={`${styles['legend-item']} 
-            // ${show ? '' : ` ${styles['noselect-item']}`}`}
-            className={`legend-item${show ? '' : ' noselect-item'}`}
+          <LegendItem
             key={`legend_${name}`}
+            handleLegendHover={handleLegendHover}
+            handleLegendLeave={handleLegendLeave}
+            handleLegendClick={handleLegendClick}
+            name={name}
+            show={show}
           >
             {option.content && option.content(params)}
-          </div>
+          </LegendItem>
         );
       })}
     </div>
