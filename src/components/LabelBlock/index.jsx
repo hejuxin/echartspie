@@ -1,5 +1,5 @@
 import React from 'react';
-import { getParams, isNum } from '../../utils';
+import { getParams, isNum } from '../utils';
 import './index.css';
 
 const LabelBlock = (props) => {
@@ -162,8 +162,8 @@ const LabelBlock = (props) => {
               {isShowActive
                 ? activeLabel?.content(params)
                 : isShowLabel &&
-                  normalLabel?.content &&
-                  normalLabel?.content(params)}
+                normalLabel?.content &&
+                normalLabel?.content(params)}
             </div>
           </>
         );

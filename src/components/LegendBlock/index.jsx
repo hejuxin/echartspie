@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { getParams, isNum } from '../../utils';
+import { getParams, isNum } from '../utils';
 import './index.css';
 // import styles from './index.module.scss'
 const LegendBlock = (props) => {

@@ -23,8 +23,8 @@ import {
   getWholeParams,
   isNum,
   formatAutoOpsData,
-} from '../utils';
-import { useAutoParams } from '../hooks';
+} from './utils';
+import { useAutoParams } from './hooks';
 import LabelBlock from './LabelBlock';
 import LegendBlock from './LegendBlock';
 import CenterBlock from './CenterBlock';
@@ -43,7 +43,7 @@ const Pie = (props) => {
     centerBlockOption = {},
     wrapStyle = {},
     type = 'pie',
-    highLightCallback = () => {},
+    highLightCallback = () => { },
     nodeClick = false,
     highLightOption = {},
   } = props;
@@ -55,6 +55,12 @@ const Pie = (props) => {
   const [dataSource, setDataSource] = useState([]);
   const [labelPos, setLabelPos] = useState({});
   const [radiusSource, setRadiusSource] = useState([]);
+
+  // const [highInfo, setHighInfo] = useState({});
+  const [highInfo, setHighInfo] = useState({
+    data: {},
+    showTip: false
+  });
 
   const isPie = useMemo(() => {
     return type !== 'sunburst';
@@ -232,37 +238,51 @@ const Pie = (props) => {
       dataSource,
     });
   };
-  const handleHightlight = ({ seriesIndex, dataIndex, isShowTip = false }) => {
-    const flatData = flatAndUnique(dataSource);
-    let wholeTree;
-    let item;
-    let params;
-    if (!isPie) {
-      if (dataIndex > 0) {
-        item = flatData[dataIndex - 1];
-        wholeTree = getWholeParams({
-          data: dataSource[0],
-          item,
-        });
-        params = getParams2({
-          data: dataSource[0],
-          item,
-        });
-        params = {
-          ...params,
-          ...item,
-        };
-      }
-    } else {
-      dataIndex = dataIndex[seriesIndex];
-      item = flatData[dataIndex];
-      params = getParams2({
-        data: dataSource[0],
-        item,
-      });
-    }
+  const handleHightlight = ({ seriesIndex, dataIndex, isShowTip = false, needHighlight = true }) => {
+    // const flatData = flatAndUnique(dataSource);
+    // let wholeTree;
+    // let item;
+    // let params;
+    // if (!isPie) {
+    //   if (dataIndex > 0) {
+    //     item = flatData[dataIndex - 1];
+    //     wholeTree = getWholeParams({
+    //       data: dataSource[0],
+    //       item,
+    //     });
+    //     params = getParams2({
+    //       data: dataSource[0],
+    //       item,
+    //     });
+    //     params = {
+    //       ...params,
+    //       ...item,
+    //     };
+    //   }
+    // } else {
+    //   dataIndex = dataIndex[seriesIndex];
+    //   item = flatData[dataIndex];
+    //   params = getParams2({
+    //     data: dataSource[0],
+    //     item,
+    //   });
+    // }
 
-    highLightCallback(params, wholeTree);
+    // highLightCallback(params, wholeTree);
+    // 鼠标移开
+    if (dataIndex === -1) {
+      if (_autoPlayOption.enable) {
+        chartRef.current.dispatchAction({
+          type: 'downplay',
+        });
+        chartRef.current.dispatchAction({
+          type: 'hideTip',
+        });
+      }
+
+      return;
+      // highLightCallback(params, wholeTree);
+    }
 
     const seriesIndexArr = isNum(seriesIndex) ? [seriesIndex] : seriesIndex;
     const dataInfo = {
@@ -273,11 +293,13 @@ const Pie = (props) => {
         };
       }),
     };
+
+    console.log('handleHightlight', dataInfo, 'dataInfo')
+
+
+    // if (_autoPlayOption.enable) {
     chartRef.current.dispatchAction({
       type: 'downplay',
-    });
-    chartRef.current.dispatchAction({
-      type: 'hideTip',
     });
 
     setTimeout(() => {
@@ -287,8 +309,13 @@ const Pie = (props) => {
         ...dataInfo,
       });
     }, 0);
+    // }
 
     if (isShowTip) {
+      chartRef.current.dispatchAction({
+        type: 'hideTip',
+      });
+
       chartRef.current.dispatchAction({
         type: 'showTip',
         ...dataInfo,
@@ -343,8 +370,8 @@ const Pie = (props) => {
                 autoInfo[key] = isNum(dIdx[autoIdx])
                   ? dIdx[autoIdx]
                   : isNum(dIdx[dIdx.length - 1])
-                  ? dIdx[dIdx.length - 1]
-                  : -1;
+                    ? dIdx[dIdx.length - 1]
+                    : -1;
               } else {
                 autoInfo[key] = -1;
               }
@@ -375,8 +402,8 @@ const Pie = (props) => {
             autoInfo[key] = isNum(dIdx[autoIdx])
               ? dIdx[autoIdx]
               : isNum(dIdx[dIdx.length - 1])
-              ? dIdx[dIdx.length - 1]
-              : -1;
+                ? dIdx[dIdx.length - 1]
+                : -1;
           } else {
             autoInfo[key] = -1;
           }
@@ -425,22 +452,26 @@ const Pie = (props) => {
     //   handleInit();
     // });
 
+    window.addEventListener('resize', () => {
+      myChart.resize()
+    })
+
     return () => {
       autoParams.removeInterval();
       myChart.dispose(domRef.current);
     };
-  }, []);
+  });
 
   useUpdateLayoutEffect(() => {
     if (init) {
       let _autoSeriesArr = formatAutoOpsData(autoPlayOption.seriesIndex);
       const { seriesIndex: sIdx, dataIndex: dIdx } = autoStartInfo;
-      if (dIdx) {
-        handleHightlight({
-          seriesIndex: sIdx || _autoSeriesArr || [],
-          dataIndex: dIdx || [],
-        });
-      }
+      // if (dIdx) {
+      //   handleHightlight({
+      //     seriesIndex: sIdx || _autoSeriesArr || [],
+      //     dataIndex: dIdx || [],
+      //   });
+      // }
 
       chartRef.current.on('mouseover', (value) => {
         const { seriesIndex, dataIndex, data } = value;
@@ -476,13 +507,42 @@ const Pie = (props) => {
           return;
         }
 
-        autoParams.removeInterval(() => {
-          const current = autoParams.getWip();
-          autoParams.setWip({
-            ...current,
-            [seriesIndex]: dataIndex,
+
+        // 若有自动，移除自动
+        // 记录当前位置，下次轮播从这个点开始
+        if (_autoPlayOption.enable) {
+          autoParams.removeInterval(() => {
+            const current = autoParams.getWip();
+            autoParams.setWip({
+              ...current,
+              [seriesIndex]: dataIndex,
+            });
           });
-        });
+        }
+
+        console.log(autoParams.autoIdx, 'ffff')
+
+        // // 鼠标移入时永远只有一项
+        // setHighInfo({
+        //   [seriesIndex]: dataIndex
+        // })
+
+        // setHighInfo((info) => {
+        //   return {
+        //     ...info,
+        //     [seriesIndex]: dataIndex
+        //   }
+        // })
+
+        setHighInfo((info) => {
+          return {
+            ...info,
+            data: {
+              ...info?.data,
+              [seriesIndex]: dataIndex
+            }
+          }
+        })
 
         // todo
         // if (_autoPlayOption.enable) {
@@ -493,28 +553,29 @@ const Pie = (props) => {
         //     };
         //   });
         // }
-        autoParams.setAutoCurrent((obj) => {
-          return {
-            ...obj,
-            [seriesIndex]: dataIndex,
-          };
-        });
+        // autoParams.setAutoCurrent((obj) => {
+        //   return {
+        //     ...obj,
+        //     [seriesIndex]: dataIndex,
+        //   };
+        // });
 
-        if (!_autoPlayOption.enable) {
-          highLightCallback(data);
-        }
+        // if (!_autoPlayOption.enable) {
+        //   highLightCallback(data);
+        // }
         // handleHightlight({ seriesIndex, dataIndex, isShowTip: true });
       });
       chartRef.current.on('mouseout', (value) => {
         const { seriesIndex } = value;
-        if (isPie && !!highLightOption.isOutDown) {
-          autoParams.setAutoCurrent((obj) => {
-            return {
-              ...obj,
-              [seriesIndex]: -1,
-            };
-          });
-        }
+        console.log('event: mouseout', seriesIndex)
+        // if (isPie && !!highLightOption.isOutDown) {
+        //   autoParams.setAutoCurrent((obj) => {
+        //     return {
+        //       ...obj,
+        //       [seriesIndex]: -1,
+        //     };
+        //   });
+        // }
         // autoParams.setAutoCurrent((obj) => {
         //   if (isPie && !!highLightOption.isOutDown) {
         //     return {
@@ -528,23 +589,86 @@ const Pie = (props) => {
         // if (_autoPlayOption.enable) {
         //   createInterval();
         // }
-        createInterval();
+        // createInterval();
+
+        // setHighInfo({
+        //   [seriesIndex]: -1
+        // })
+
+        // setHighInfo((info) => {
+        //   return {
+        //     ...info,
+        //     [seriesIndex]: -1
+        //   }
+        // })
+        setHighInfo((info) => {
+          return {
+            ...info,
+            data: {
+              ...info?.data,
+              [seriesIndex]: -1
+            }
+          }
+        })
+
+        if (_autoPlayOption.enable) {
+          createInterval();
+        }
       });
 
-      chartRef.current.on('legendselectchanged', (value) => {
-        const { selected = {} } = value;
-        const newData = Object.values(dataSource).map((data) => {
-          return data.map((val) => {
-            return {
-              ...val,
-              show: selected?.[val.name],
-            };
-          });
-        });
-        setDataSource(newData);
-      });
+      // chartRef.current.on('legendselectchanged', (value) => {
+      //   const { selected = {} } = value;
+      //   const newData = Object.values(dataSource).map((data) => {
+      //     return data.map((val) => {
+      //       return {
+      //         ...val,
+      //         show: selected?.[val.name],
+      //       };
+      //     });
+      //   });
+      //   setDataSource(newData);
+      // });
     }
   }, [init]);
+
+  useUpdateLayoutEffect(() => {
+    console.log(highInfo, 'highInfo')
+    const highData = highInfo.data;
+    const seriesArr = Object.keys(highData);
+    if (!seriesArr.length) return;
+    // const seriesIndex = Number(seriesArr[0]);
+    // const dataIndex = highInfo[seriesIndex];
+    // let dataIndex = autoParams.autoCurrent;
+    // let seriesIndex = autoParams.autoIdx
+    //   ? _autoPlayOption.seriesIndex
+    //   : Object.keys(autoParams.autoCurrent);
+
+    // let isShowTip =
+    //   typeof _autoPlayOption.showTip === 'boolean'
+    //     ? _autoPlayOption.showTip
+    //     : true;
+    // if (!isPie) {
+    //   seriesIndex = 0;
+    //   const autoVal = dataIndex[seriesIndex];
+    //   if (autoVal === -1) return;
+    //   const id = dataSource[seriesIndex]?.[autoVal]?.id;
+    //   dataIndex = id + 1;
+
+    //   isShowTip = false;
+    // } else {
+    //   dataIndex = autoParams.autoCurrent;
+    // }
+
+    const _params = {
+      seriesIndex: seriesArr,
+      dataIndex: highData,
+      isShowTip: highInfo.showTip,
+      // needHighlight: false
+    };
+
+    console.log(_params, '_params')
+    handleHightlight(_params);
+  }, [highInfo]);
 
   useUpdateLayoutEffect(() => {
     const ops = getOps(dataSource);
@@ -556,32 +680,44 @@ const Pie = (props) => {
   useUpdateLayoutEffect(() => {
     if (!_autoPlayOption.enable || !autoParams.autoIdx) return;
     let dataIndex = autoParams.autoCurrent;
-    let seriesIndex = autoParams.autoIdx
-      ? _autoPlayOption.seriesIndex
-      : Object.keys(autoParams.autoCurrent);
+    // let seriesIndex = autoParams.autoIdx
+    //   ? _autoPlayOption.seriesIndex
+    //   : Object.keys(autoParams.autoCurrent);
 
     let isShowTip =
       typeof _autoPlayOption.showTip === 'boolean'
         ? _autoPlayOption.showTip
         : true;
-    if (!isPie) {
-      seriesIndex = 0;
-      const autoVal = dataIndex[seriesIndex];
-      if (autoVal === -1) return;
-      const id = dataSource[seriesIndex]?.[autoVal]?.id;
-      dataIndex = id + 1;
+    // if (!isPie) {
+    //   seriesIndex = 0;
+    //   const autoVal = dataIndex[seriesIndex];
+    //   if (autoVal === -1) return;
+    //   const id = dataSource[seriesIndex]?.[autoVal]?.id;
+    //   dataIndex = id + 1;
 
-      isShowTip = false;
-    } else {
-      dataIndex = autoParams.autoCurrent;
-    }
+    //   isShowTip = false;
+    // } else {
+    //   dataIndex = autoParams.autoCurrent;
+    // }
 
-    const _params = {
-      seriesIndex,
-      dataIndex,
-      isShowTip,
-    };
-    handleHightlight(_params);
+    // const _params = {
+    //   seriesIndex,
+    //   dataIndex,
+    //   isShowTip,
+    // };
+    console.log('auto callback', dataIndex)
+
+    // setHighInfo({
+    //   ...dataIndex
+    // })
+    setHighInfo({
+      // ...dataIndex
+      data: {
+        ...dataIndex
+      },
+      showTip: isShowTip
+    })
+    // handleHightlight(_params);
   }, [autoParams.autoCurrent]);
 
   const handleLegendHover = (name) => {
@@ -623,9 +759,12 @@ const Pie = (props) => {
     setDataSource(newData);
   };
   const getCenterContent = () => {
+    console.log(autoParams.autoIdx, 'gggg')
+
     let seriesIndex = -1;
     // todo 是否有问题 为啥是autoParams 如果没开auto会咋样
-    const idxObj = autoParams.autoCurrent;
+    // const idxObj = autoParams.autoIdx ? autoParams.autoCurrent : highInfo;
+    const idxObj = highInfo.data;
     Object.keys(idxObj).forEach((key) => {
       if (typeof idxObj[key] === 'number' && idxObj[key] !== -1) {
         seriesIndex = key;
@@ -735,7 +874,9 @@ const Pie = (props) => {
           }}
         >
           <TooltipBlock
-            autoCurrent={autoParams.autoCurrent}
+            // autoCurrent={autoParams.autoCurrent}
+            // autoCurrent={autoParams.autoIdx ? autoParams.autoCurrent : highInfo}
+            autoCurrent={highInfo.data}
             dataSource={dataSource}
             seriesOps={chartOption.current.series}
           />

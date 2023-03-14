@@ -1,5 +1,5 @@
 import React from 'react';
-import { getParams, getParams2 } from '../../utils';
+import { getParams, getParams2 } from '../utils';
 
 const TooltipBlock = (props) => {
   const { autoCurrent = {}, dataSource, seriesOps = {} } = props;
