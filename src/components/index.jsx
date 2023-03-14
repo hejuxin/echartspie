@@ -7,7 +7,7 @@ import React, {
 } from 'react';
 import * as echarts from 'echarts';
 import { useMount, useUpdateLayoutEffect, useUpdateEffect, useUnmount } from 'ahooks';
-
+import { INITNUM } from './enum';
 import defaultOption, {
   defaultColor,
   defaultAutoOption,
@@ -91,6 +91,7 @@ const Pie = (props) => {
       return new Array(dataArr.length).fill(-1);
     return dataArr;
   }, []);
+
   const getOps = (data = []) => {
     let isLegendCustom = false;
     if (legendOption.content) {
@@ -251,7 +252,7 @@ const Pie = (props) => {
           ...info,
           data: {
             ...info?.data,
-            [seriesIndex]: -1
+            [seriesIndex]: INITNUM
           }
         }
       })
@@ -313,7 +314,7 @@ const Pie = (props) => {
   const handleHightlight = ({ seriesIndex, dataIndex, isShowTip = false, needHighlight = true }) => {
     console.log(dataSource, 'dataSource')
     // 鼠标移开
-    if (dataIndex === -1) {
+    if (dataIndex === INITNUM) {
       if (_autoPlayOption.enable) {
         chartRef.current.dispatchAction({
           type: 'downplay',
@@ -372,6 +373,11 @@ const Pie = (props) => {
       }}
     >
       <div ref={domRef} style={{ width: '100%', height: '100%' }}></div>
+      <CenterBlock
+        option={centerBlockOption}
+        dataSource={dataSource}
+        highData={highInfo.data}
+      />
     </div>
   );
 };
