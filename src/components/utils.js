@@ -292,11 +292,3 @@ export const formatAutoOpsData = (data) => {
 
   return arr;
 };
-
-
-export const isNum = (value) => typeof value === 'number';
-
-export const getNumVal = (value, defalutValue) => {
-  if (typeof value === 'number') return value;
-  return defalutValue;
-}

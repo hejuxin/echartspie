@@ -1,5 +1,6 @@
 import React from 'react';
-import { getParams, isNum } from '../utils';
+import { getParams } from '../utils';
+import { isNum } from '../utils/common';
 import './index.css';
 
 const LabelBlock = (props) => {

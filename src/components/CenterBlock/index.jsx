@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react';
 import { INITNUM } from '../enum';
-import { getParams2, isNum } from '../utils';
+import { getParams2 } from '../utils';
+import { isNum } from '../utils/common';
 
 const CenterBlock = (props) => {
   const { option = {}, highData, dataSource } = props;

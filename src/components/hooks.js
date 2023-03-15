@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { getNumVal } from './utils';
+import { getNumVal } from './utils/common';
 import { INITNUM } from './enum';
 
 export function useAutoParams() {

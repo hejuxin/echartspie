@@ -21,9 +21,9 @@ import {
   getParams,
   getParams2,
   getWholeParams,
-  isNum,
   formatAutoOpsData,
 } from './utils';
+import { isNum } from './utils/common';
 import { useAutoParams } from './hooks';
 import LabelBlock from './LabelBlock';
 import LegendBlock from './LegendBlock';
