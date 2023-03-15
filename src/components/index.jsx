@@ -24,6 +24,7 @@ import {
   formatAutoOpsData,
 } from './utils';
 import { isNum } from './utils/common';
+import { getAutoSeriesIndex } from './utils/auto';
 import { useAutoParams } from './hooks';
 import LabelBlock from './LabelBlock';
 import LegendBlock from './LegendBlock';
@@ -77,10 +78,12 @@ const Pie = (props) => {
   }, [radius]);
 
   const _autoPlayOption = useMemo(() => {
+    let autoSeriesArr = getAutoSeriesIndex(autoPlayOption.seriesIndex, Object.keys(radiusSource));
     return {
       ...defaultAutoOption,
       ...autoPlayOption,
       enable: autoPlay || false,
+      seriesIndexArr: autoSeriesArr
     };
   }, [autoPlay, autoPlayOption]);
 
@@ -195,39 +198,38 @@ const Pie = (props) => {
 
   const handleInit = () => {
     // let _autoSeriesArr = formatAutoOpsData(autoPlayOption.seriesIndex);
-
     const dataArr = [];
-    const autoInfo = {};
     const labelObj = {};
     if (radiusSource.length > 1) {
       Object.keys(radius).forEach((key) => {
         dataArr[key] = data[key];
         labelObj[key] = [];
-
-        autoInfo[key] = INITNUM;
       });
     } else {
       dataArr[0] = data;
       labelObj[0] = [];
-
-      autoInfo[0] = INITNUM;
     }
     setLabelPos(labelObj);
 
-    autoParams.init(autoInfo);
 
     let newData = formatterData(dataArr);
 
     setDataSource(newData);
+
+    const autoInfo = {};
+
+    _autoPlayOption.seriesIndexArr.forEach(key => {
+      autoInfo[key] = INITNUM;
+    })
+    autoParams.init(autoInfo);
   };
 
-  const createInterval = () => {
-    console.log('createInterval', dataSource);
+  const createInterval = useCallback(() => {
     autoParams.createInterval({
       ..._autoPlayOption,
       dataSource,
     });
-  };
+  }, [dataSource]);
 
   // const handleLegendChange = useCallback((value) => {
   //   console.log(value, 'ffggg', dataSource)
@@ -256,13 +258,15 @@ const Pie = (props) => {
       // 若有自动，移除自动
       // 记录当前位置，下次轮播从这个点开始
       if (_autoPlayOption.enable) {
-        autoParams.removeInterval(() => {
+        autoParams.removeInterval();
+        // 若该层存在自动轮播，则记录当前高亮位置，作为下次轮播起始点
+        if (_autoPlayOption.seriesIndexArr.includes(Number(seriesIndex))) {
           const current = autoParams.getWip();
           autoParams.setWip({
             ...current,
             [seriesIndex]: dataIndex,
           });
-        });
+        }
       }
 
       setHighInfo((info) => {
@@ -289,7 +293,9 @@ const Pie = (props) => {
       })
 
       if (_autoPlayOption.enable) {
-        createInterval();
+        // todo 直接createInterval 会拿不到最新的dataSource
+        // createInterval();
+        setDataSource((nowData) => [...nowData])
       }
     });
 
@@ -321,7 +327,6 @@ const Pie = (props) => {
   })
 
   useUpdateLayoutEffect(() => {
-    console.log('data update', radiusSource)
     const dataArr = [];
 
     if (radiusSource.length > 1) {
@@ -338,8 +343,6 @@ const Pie = (props) => {
   }, [data])
 
   useUpdateLayoutEffect(() => {
-    console.log(dataSource, 'dataSource')
-
     const ops = getOps(dataSource);
     chartOption.current = ops;
     chartRef.current.setOption(ops);
@@ -412,7 +415,6 @@ const Pie = (props) => {
   }, [highInfo]);
 
   const handleHightlight = ({ seriesIndex, dataIndex, isShowTip = false, needHighlight = true }) => {
-    // console.log(dataSource, 'dataSource')
     // 鼠标移开
     // todo
     if (dataIndex === INITNUM) {
