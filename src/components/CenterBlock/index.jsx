@@ -30,24 +30,24 @@ const CenterBlock = (props) => {
     let params;
     if (highingKeys.length === 1) {
       const highingKey = highingKeys[0];
-      const hightVal = highData[highingKey];
+      const highingVal = highData[highingKey];
       const dataArr = dataSource[highingKey];
 
       params = getParams2({
         data: dataArr,
-        item: dataArr[hightVal]
+        item: dataArr[highingVal]
       })
 
     } else {
       // 双饼图内外都自动轮播的情况
       let paramsArr = [];
       Object.keys(highingKeys).map(highingKey => {
-        const hightVal = highData[highingKey];
+        const highingVal = highData[highingKey];
         const dataArr = dataSource[highingKey];
 
         const param = getParams2({
           data: dataArr,
-          item: dataArr[hightVal]
+          item: dataArr[highingVal]
         });
 
         paramsArr.push(param);

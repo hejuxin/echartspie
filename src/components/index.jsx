@@ -77,8 +77,12 @@ const Pie = (props) => {
   }, [radius]);
 
   const _autoPlayOption = useMemo(() => {
-    return {}
-  }, [])
+    return {
+      ...defaultAutoOption,
+      ...autoPlayOption,
+      enable: autoPlay || false,
+    };
+  }, [autoPlay, autoPlayOption]);
 
   const getCustomLegendData = useCallback((data) => {
     const dataArr = data.map((item) => {
@@ -199,10 +203,14 @@ const Pie = (props) => {
       Object.keys(radius).forEach((key) => {
         dataArr[key] = data[key];
         labelObj[key] = [];
+
+        autoInfo[key] = INITNUM;
       });
     } else {
       dataArr[0] = data;
       labelObj[0] = [];
+
+      autoInfo[0] = INITNUM;
     }
     setLabelPos(labelObj);
 
@@ -211,6 +219,14 @@ const Pie = (props) => {
     let newData = formatterData(dataArr);
 
     setDataSource(newData);
+  };
+
+  const createInterval = () => {
+    console.log('createInterval', dataSource);
+    autoParams.createInterval({
+      ..._autoPlayOption,
+      dataSource,
+    });
   };
 
   useMount(() => {
@@ -293,8 +309,57 @@ const Pie = (props) => {
     const ops = getOps(dataSource);
     chartOption.current = ops;
     chartRef.current.setOption(ops);
-    // createInterval();
+    createInterval();
   }, [dataSource]);
+
+  useUpdateLayoutEffect(() => {
+    if (!_autoPlayOption.enable || !autoParams.autoIdx) return;
+    let dataIndex = autoParams.autoCurrent;
+    // let seriesIndex = autoParams.autoIdx
+    //   ? _autoPlayOption.seriesIndex
+    //   : Object.keys(autoParams.autoCurrent);
+
+
+    // if (!isPie) {
+    //   // todo
+    //   let seriesIndex = 0;
+    //   const autoVal = dataIndex[seriesIndex];
+    //   if (autoVal === -1) return;
+    //   const id = dataSource[seriesIndex]?.[autoVal]?.id;
+    //   dataIndex = id + 1;
+
+    //   let isShowTip = false;
+
+    //   // setHighInfo({
+    //   // })
+    // } else {
+    // dataIndex = autoParams.autoCurrent;
+    let isShowTip =
+      typeof _autoPlayOption.showTip === 'boolean'
+        ? _autoPlayOption.showTip
+        : true;
+
+    setHighInfo({
+      // ...dataIndex
+      data: {
+        ...dataIndex
+      },
+      showTip: isShowTip
+    })
+    // }
+
+    // const _params = {
+    //   seriesIndex,
+    //   dataIndex,
+    //   isShowTip,
+    // };
+
+    // setHighInfo({
+    //   ...dataIndex
+    // })
+
+    // handleHightlight(_params);
+  }, [autoParams.autoCurrent]);
 
   useUpdateLayoutEffect(() => {
     const highData = highInfo.data;
@@ -314,6 +379,7 @@ const Pie = (props) => {
   const handleHightlight = ({ seriesIndex, dataIndex, isShowTip = false, needHighlight = true }) => {
     console.log(dataSource, 'dataSource')
     // 鼠标移开
+    // todo
     if (dataIndex === INITNUM) {
       if (_autoPlayOption.enable) {
         chartRef.current.dispatchAction({
@@ -361,6 +427,22 @@ const Pie = (props) => {
         ...dataInfo,
       });
     }
+
+    let paramsArr = [];
+
+    seriesIndex.map(highingKey => {
+      const highingVal = dataIndex[highingKey];
+      const dataArr = dataSource[highingKey];
+
+      const param = getParams2({
+        data: dataArr,
+        item: dataArr[highingVal]
+      });
+
+      paramsArr.push(param);
+    })
+
+    highLightCallback(paramsArr);
   };
 
   return (
