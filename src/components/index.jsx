@@ -78,7 +78,10 @@ const Pie = (props) => {
   }, [radius]);
 
   const _autoPlayOption = useMemo(() => {
-    let autoSeriesArr = getAutoSeriesIndex(autoPlayOption.seriesIndex, Object.keys(radiusSource));
+    let autoSeriesArr = getAutoSeriesIndex({
+      seriesIndex: autoPlayOption.seriesIndex,
+      keyArr: Object.keys(radiusSource)
+    });
     return {
       ...defaultAutoOption,
       ...autoPlayOption,
