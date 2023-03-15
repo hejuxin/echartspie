@@ -229,6 +229,21 @@ const Pie = (props) => {
     });
   };
 
+  // const handleLegendChange = useCallback((value) => {
+  //   console.log(value, 'ffggg', dataSource)
+  //   const { selected = {} } = value;
+  //   const newData = Object.values(dataSource).map((data) => {
+  //     return data.map((val) => {
+  //       return {
+  //         ...val,
+  //         show: selected?.[val.name],
+  //       };
+  //     });
+  //   });
+
+  //   setDataSource(newData);
+  // }, [dataSource])
+
   useMount(() => {
     const myChart = echarts.init(domRef.current);
     chartRef.current = myChart;
@@ -278,6 +293,23 @@ const Pie = (props) => {
       }
     });
 
+    chartRef.current.on('legendselectchanged', (value) => {
+      const { selected = {} } = value;
+
+      setDataSource((nowData) => {
+        const newData = Object.values(nowData).map((data) => {
+          return data.map((val) => {
+            return {
+              ...val,
+              show: selected?.[val.name],
+            };
+          });
+        });
+
+        return newData
+      })
+    });
+
     window.addEventListener('resize', () => {
       myChart.resize()
     })
@@ -306,6 +338,8 @@ const Pie = (props) => {
   }, [data])
 
   useUpdateLayoutEffect(() => {
+    console.log(dataSource, 'dataSource')
+
     const ops = getOps(dataSource);
     chartOption.current = ops;
     chartRef.current.setOption(ops);
@@ -313,6 +347,7 @@ const Pie = (props) => {
   }, [dataSource]);
 
   useUpdateLayoutEffect(() => {
+    console.log(autoParams.autoCurrent, 'autoParams.autoCurrent')
     if (!_autoPlayOption.enable || !autoParams.autoIdx) return;
     let dataIndex = autoParams.autoCurrent;
     // let seriesIndex = autoParams.autoIdx
@@ -377,7 +412,7 @@ const Pie = (props) => {
   }, [highInfo]);
 
   const handleHightlight = ({ seriesIndex, dataIndex, isShowTip = false, needHighlight = true }) => {
-    console.log(dataSource, 'dataSource')
+    // console.log(dataSource, 'dataSource')
     // 鼠标移开
     // todo
     if (dataIndex === INITNUM) {
