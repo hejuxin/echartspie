@@ -23,7 +23,7 @@ import {
   getWholeParams,
   formatAutoOpsData,
 } from './utils';
-import { isNum } from './utils/common';
+import { isNum, isEmptyArray, getNumVal } from './utils/common';
 import { getAutoSeriesIndex } from './utils/auto';
 import { useAutoParams } from './hooks';
 import LabelBlock from './LabelBlock';
@@ -89,6 +89,36 @@ const Pie = (props) => {
       seriesIndexArr: autoSeriesArr
     };
   }, [autoPlay, autoPlayOption]);
+
+  const _highOption = useMemo(() => {
+    const ops = {
+      highCallback: highLightOption.callback || highLightCallback,
+      ...highLightOption
+    };
+
+    const defaultSeriesIndex = highLightOption.default?.seriesIndex || [];
+    const defaultDataIndex = highLightOption.default?.dataIndex || [];
+
+    if (isEmptyArray(defaultSeriesIndex) && !isEmptyArray(defaultDataIndex)) {
+      ops.defaultSeriesIndex = [0];
+      ops.defaultDataIndex = defaultDataIndex;
+    } else if (!isEmptyArray(defaultSeriesIndex) && !isEmptyArray(defaultDataIndex)) {
+      const sArr = [], dArr = [];
+      const radiusKeyArr = Object.keys(radiusSource).map(key => Number(key));
+      defaultSeriesIndex.forEach(sIdx => {
+        const idx = radiusKeyArr.findIndex(key => key === sIdx);
+        if (idx > -1) {
+          sArr.push(sIdx);
+          const data = getNumVal(defaultDataIndex[idx], defaultDataIndex[defaultDataIndex.length - 1]);
+          dArr.push(data);
+        }
+      })
+      ops.defaultSeriesIndex = sArr;
+      ops.defaultDataIndex = dArr;
+    }
+
+    return ops;
+  }, [highLightOption, highLightCallback])
 
   const getCustomLegendData = useCallback((data) => {
     const dataArr = data.map((item) => {
@@ -221,10 +251,29 @@ const Pie = (props) => {
 
     const autoInfo = {};
 
+    const defaultSeriesIndex = _highOption.defaultSeriesIndex || [];
+    const defaultDataIndex = _highOption.defaultDataIndex
+
     _autoPlayOption.seriesIndexArr.forEach(key => {
-      autoInfo[key] = INITNUM;
+      if (isEmptyArray(defaultSeriesIndex)) {
+        autoInfo[key] = INITNUM;
+      } else {
+        const keyIndex = defaultSeriesIndex.findIndex(sIdx => key === sIdx);
+        autoInfo[key] = defaultDataIndex[keyIndex];
+      }
     })
     autoParams.init(autoInfo);
+
+
+    // 默认高亮
+    const high = {};
+    defaultSeriesIndex.forEach((sIdx, index) => {
+      high[sIdx] = defaultDataIndex[index];
+    })
+    setHighInfo({
+      ...highInfo,
+      data: high
+    });
   };
 
   const createInterval = useCallback(() => {
