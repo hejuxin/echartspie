@@ -2,6 +2,7 @@ import React from 'react';
 import defaultOption, { defaultColor } from './defaultOption';
 // import ReactDOM from 'react-dom/client';
 import { createRoot } from 'react-dom/client';
+import { isNum } from './utils/common';
 
 export const formatterLegend = ({
   option = {},
@@ -17,18 +18,19 @@ export const formatterLegend = ({
   if (!content) return legend;
 
   if (typeof content === 'function') {
-    const res = content({});
+    const res = content([]);
 
     if (typeof res === 'string') {
       if (seriesIndexArr.length) {
-        let totalData = flatAndUnique(data);
+        let flatData = flatAndUnique(data);
         return {
           ...legend,
           formatter: (name) => {
             if (!content) return name;
-            let params = {
-              name,
-            };
+            // let params = {
+            //   name,
+            // };
+            let params = [];
             seriesIndexArr.forEach((seriesIndex) => {
               const dataItem = data[seriesIndex] || [];
               const dataItemTotal = dataItem.reduce(
@@ -39,22 +41,21 @@ export const formatterLegend = ({
               dataItem.forEach((item, index) => {
                 if (item.name === name) {
                   const colorIndex =
-                    totalData.findIndex(
-                      (totalDataItem) => totalDataItem.name === name
+                    flatData.findIndex(
+                      (flatDataItem) => flatDataItem.name === name
                     ) % color.length;
 
                   const { value } = item;
-                  params = {
-                    ...params,
+                  params.push({
+                    name,
                     value,
                     dataIndex: index,
                     color: color[colorIndex],
                     percent: (value / dataItemTotal) * 100 || 0,
-                  };
+                  });
                 }
               });
             });
-
             if (typeof content === 'function') {
               const res = content(params);
 
@@ -263,6 +264,7 @@ export const getParams2 = ({ data = [], item = {}, color = defaultColor }) => {
     name: item.name,
     value: item.value,
     dataIndex: item.dataIndex,
+    seriesIndex: item.seriesIndex,
     color: color[colorIndex],
     percent:
       (Number(item.value) / totalBySeriersIndex[item.seriesIndex]) * 100 || 0,

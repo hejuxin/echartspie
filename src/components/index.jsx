@@ -118,24 +118,27 @@ const Pie = (props) => {
     }
 
     return ops;
-  }, [highLightOption, highLightCallback])
+  }, [highLightOption, highLightCallback]);
+
+  const flatData = useMemo(() => {
+    // 用于双饼图下图例，需打平数据
+    return flatAndUnique(dataSource);
+  }, [dataSource]);
 
   const getCustomLegendData = useCallback((data) => {
     const dataArr = data.map((item) => {
       if (Array.isArray(item)) {
         return getCustomLegendData(item);
       }
-      return item.show ? item : null;
+      return item.show ? item : -1;
     });
-    if (dataArr.filter(Boolean).length === 0)
-      return new Array(dataArr.length).fill(-1);
     return dataArr;
   }, []);
 
   const getOps = (data = []) => {
     let isLegendCustom = false;
     if (legendOption.content) {
-      const res = legendOption.content({});
+      const res = legendOption.content([]);
       if (typeof res !== 'string') {
         isLegendCustom = true;
       }
@@ -192,10 +195,7 @@ const Pie = (props) => {
           },
         };
 
-        // 对tooltip进行格式化
-        // series.tooltip = formatterTooltip(series.tooltip, autoInfo);
-
-        // 打平后放到这里
+        // 对tooltip进行格式化，打平后放到这里
         series.tooltip = formatterTooltip(
           {
             ...tooltipOption,
@@ -352,20 +352,7 @@ const Pie = (props) => {
     });
 
     chartRef.current.on('legendselectchanged', (value) => {
-      const { selected = {} } = value;
-
-      setDataSource((nowData) => {
-        const newData = Object.values(nowData).map((data) => {
-          return data.map((val) => {
-            return {
-              ...val,
-              show: selected?.[val.name],
-            };
-          });
-        });
-
-        return newData
-      })
+      onLegendChange(value);
     });
 
     window.addEventListener('resize', () => {
@@ -534,6 +521,66 @@ const Pie = (props) => {
     highLightCallback(paramsArr);
   };
 
+  const handleLegendHover = (name) => {
+    autoParams.removeInterval();
+
+    const legendObj = {};
+    flatData.forEach((item) => {
+      const { name, seriesIndex, dataIndex } = item;
+      if (!legendObj[name]) {
+        legendObj[name] = {};
+      }
+
+      legendObj[name][seriesIndex] = dataIndex;
+    });
+    const legendItem = legendObj[name];
+    handleHightlight({
+      seriesIndex: Object.keys(legendItem),
+      dataIndex: legendItem,
+    });
+  };
+
+  const handleLegendLeave = () => {
+    chartRef.current.dispatchAction({
+      type: 'downplay',
+    });
+    createInterval();
+  };
+
+  const handleLegendClick = (name) => {
+    console.log(name, 'name', 1)
+    const selected = {};
+    flatData.forEach(item => {
+      if (item.name === name) {
+        selected[item.name] = !item.show;
+      } else {
+        selected[item.name] = item.show;
+      }
+    })
+    const value = {
+      name,
+      selected,
+      type: 'customlegendselectchanged'
+    }
+    onLegendChange(value);
+  };
+
+  const onLegendChange = (value) => {
+    const { selected = {}, name } = value;
+
+    setDataSource((nowData) => {
+      const newData = [...nowData];
+      flatAndUnique(nowData).forEach((item) => {
+        if (item.name === name) {
+          const { seriesIndex, dataIndex } = item;
+          newData[seriesIndex][dataIndex].show = selected[name] || false;
+        }
+      });
+
+      return newData;
+    })
+  }
+
   return (
     <div
       style={{
@@ -548,6 +595,13 @@ const Pie = (props) => {
         option={centerBlockOption}
         dataSource={dataSource}
         highData={highInfo.data}
+      />
+      <LegendBlock
+        option={chartOption.current.legend}
+        data={flatData}
+        handleLegendHover={handleLegendHover}
+        handleLegendLeave={handleLegendLeave}
+        handleLegendClick={handleLegendClick}
       />
     </div>
   );
