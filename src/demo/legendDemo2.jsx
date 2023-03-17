@@ -15,10 +15,11 @@ const LegendDemo2 = () => {
             icon: 'circle',
             orient: 'vertical',
             content: (params) => {
+              // 兼容双饼图模式，params为array
               return (
                 <div style={{ fontSize: 12 }}>
                   <div style={{ fontSize: 14 }}>{params.name}</div>
-                  <div>
+                  <div style={{ color: params.color }}>
                     {params.value} {`${params.percent?.toFixed(2)}%`}
                   </div>
                 </div>

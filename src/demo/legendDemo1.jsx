@@ -14,9 +14,13 @@ const LegendDemo1 = () => {
             bottom: 0,
             icon: 'circle',
             content: (params) => {
-              return `${params.name} ${params.value} ${params.percent?.toFixed(
-                2
-              )}%`;
+              // 兼容双饼图模式，params为array
+              return `${params.map(item => {
+                return `${item.name} ${item.value} ${item.percent?.toFixed(
+                  2
+                )}%`
+              })
+                }`
             },
           }}
           seriesOption={{
