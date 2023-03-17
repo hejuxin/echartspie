@@ -32,6 +32,13 @@ const AutoDemo1 = () => {
               dataIndex: [0],
             },
           }}
+          highLightOption={{
+            // 设置默认高亮，自动轮播初始项也根据该配置
+            default: {
+              seriesIndex: [0],
+              dataIndex: [0],
+            }
+          }}
           highLightCallback={(parmas) => {
             console.log('p', parmas);
           }}

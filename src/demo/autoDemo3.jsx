@@ -128,7 +128,8 @@ const AutoDemo3 = () => {
         ]}
         autoPlay
         autoPlayOption={{
-          seriesIndex: [0, 1],
+          // 主要用于设置双饼图模式下，自动轮播的层级
+          seriesIndex: [0, 2],
           // seriesIndex: 0,
         }}
       />
