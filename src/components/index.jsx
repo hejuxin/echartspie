@@ -490,13 +490,23 @@ const Pie = (props) => {
 
       const param = getParams2({
         data: dataArr,
-        item: dataArr[highingVal]
+        item: dataArr.find(item => item.dataIndex === highingVal) || {}
       });
 
       paramsArr.push(param);
     })
 
-    highLightCallback(paramsArr);
+    let wholeParams;
+
+    if (!isPie) {
+      const dataArr = dataSource[0];
+      const highingVal = dataIndex[0];
+      wholeParams = getWholeParams({
+        data: dataArr,
+        item: dataArr.find(item => item.dataIndex === highingVal) || {}
+      })
+    }
+    highLightCallback(paramsArr, wholeParams);
   };
 
   const handleLegendHover = (name) => {
