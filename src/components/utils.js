@@ -190,6 +190,7 @@ export const formatterSunData = (data = [], option = {}) => {
         show: true,
         ...ops,
         seriesIndex: 0,
+        dataIndex: itemId
       };
     });
   };

@@ -36,7 +36,8 @@ const CenterBlock = (props) => {
 
       params = getParams2({
         data: dataArr,
-        item: dataArr[highingVal]
+        // 适配旭日图模式
+        item: dataArr.find(item => item.dataIndex === highingVal) || {}
       })
 
     } else {
@@ -48,7 +49,7 @@ const CenterBlock = (props) => {
 
         const param = getParams2({
           data: dataArr,
-          item: dataArr[highingVal]
+          item: dataArr.find(item => item.dataIndex === highingVal) || {}
         });
 
         paramsArr.push(param);

@@ -16,3 +16,19 @@ export const getAutoSeriesIndex = ({ seriesIndex = 0, keyArr = [] }) => {
     return seriesArr;
   }
 };
+
+export const getHighDataInfo = ({ seriesIndex = 0, dataIndex = 0, isPie = true }) => {
+  const seriesIndexArr = isNum(seriesIndex) ? [seriesIndex] : seriesIndex;
+  // 旭日图中需要额外+1
+  const extra = isPie ? 0 : 1;
+  const dataInfo = {
+    batch: seriesIndexArr.map((item) => {
+      return {
+        seriesIndex: item,
+        dataIndex: isNum(dataIndex) ? dataIndex + extra : dataIndex[item] + extra
+      };
+    }),
+  };
+
+  return dataInfo;
+}
