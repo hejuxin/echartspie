@@ -506,7 +506,7 @@ const Pie = (props) => {
         item: dataArr.find(item => item.dataIndex === highingVal) || {}
       })
     }
-    highLightCallback(paramsArr, wholeParams);
+    _highOption.highCallback(paramsArr, wholeParams);
   };
 
   const handleLegendHover = (name) => {
