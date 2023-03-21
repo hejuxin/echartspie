@@ -3,9 +3,9 @@
 [Edit on StackBlitz ⚡️](https://stackblitz.com/edit/react-ts-ett7sc)
 
 ### 数据传参
-
 ```
 {
+  type: 'pie' | 'sunburst'
   data: [],
   radius: string | number | Array | Object
   legendOption = {},
@@ -17,9 +17,20 @@
 }
 ```
 
-- data
-  data 为数据源，格式如下
+- type
+  - 可选类型 'pie' | 'sunburst'; pie为饼图，sunburst为旭日图。
+  - 可不传，不传默认为pie。
 
+- radius
+  - 可选类型：string | number | Array | Object;
+  - radius 可不传，默认为 50%，普通饼图;
+  - radius 可传 Number 类型如 50，或 String 类型如 50%，控制普通饼图的大小;
+  - radius 可传 Array<number|string>类型，为环形图。数组的第一项是内半径，第二项是外半径。每一项遵从上述 number string 的描述;
+  - radius 可传 Object 类型，如{ 0: 50, 1: '80%' }，为双饼图;
+
+- data
+  - data为数据源，Array类型
+  格式如下
   ```
   [
     {
@@ -37,65 +48,6 @@
   ]
   ```
 
-- radius
-
-  - radius 可不传，默认为 50%，普通饼图；
-  - radius 可传 Number 类型如 50，或 String 类型如 50%，控制普通饼图的大小；
-  - radius 可传 Array<number|string>类型，为环形图。数组的第一项是内半径，第二项是外半径。每一项遵从上述 number string 的描述；
-  - radius 可传 Object 类型，如{ 0: 50, 1: '80%' }，为双饼图。
-
-- legendOption
-  legendOption 为 legend 配置项,
-  其中新增 content 属性可对 legend 内容进行自定义
-
-  - content
-
-    1. 例 1
-       返回 string 格式, 此例中图例前的 icon 遵从原有 echarts 配置进行设置，如 icon: 'circle',
-
-       ```
-        content: (params) => {
-          return `${params.name} ${params.value} ${params.percent?.toFixed(
-            2
-          )}%`;
-        }
-       ```
-
-    2. 例 2
-       返回 HTMLDOM 格式, 此例中图例前的 icon 需自行设置
-       ```
-        content: (params) => {
-          return (
-            <div style={{ fontSize: 12 }}>
-              <!-- icon -->
-              <div className='icon'></div>
-              <div style={{ fontSize: 14 }}>{params.name}</div>
-              <div>
-                {params.value} {`${params.percent?.toFixed(2)}%`}
-              </div>
-            </div>
-          );
-        }
-       ```
-
-    - params
-      params 是 content 需要的数据集。格式如下
-
-      ```
-      {
-          // 数据名，类目名
-          name: string,
-          // 数据在传入的 data 数组中的 index
-          dataIndex: number,
-          // 传入的原始数据项
-          data: Object,
-          value: number|Array|Object,
-          // 数据图形的颜色
-          color: string,
-          // 饼图，漏斗图的百分比
-          percent: number
-      }
-      ```
 
 - tooltipOption
   tooltipOption 为 tooltip 配置项,
@@ -105,6 +57,7 @@
 
     1. 例 1
        可返回 dom 格式的 string 类型，但需是原生 dom
+       (params, ticket, callback) => String
 
        ```
        content: (params, ticket, callback) => {
@@ -122,7 +75,7 @@
 
     2. 例 2
        此例可返回 react 格式的 dom 结构，返回类型为 HTMLDOM
-
+      (params, ticket, callback) => ReactNode
        ```
        content: (params, ticket, callback) => {
          return (
@@ -186,6 +139,63 @@
       }
       ```
 
+  - position
+    - 可选类型：String | Array | Function | Object
+    - 具体参考https://echarts.apache.org/zh/option.html#tooltip.position
+
+- legendOption
+  legendOption 为 legend 配置项,
+  其中新增 content 属性可对 legend 内容进行自定义
+
+  - content
+
+    1. 例 1
+       返回String类型，默认使用echarts的formatter功能，此时可按照echarts的配置设置icon，如 icon: 'circle'。
+
+       ```
+        content: (params) => {
+          return `${params.name} ${params.value} ${params.percent?.toFixed(
+            2
+          )}%`;
+        }
+       ```
+
+    2. 例 2
+       返回 ReactNode 类型, 此例中图例前的 icon 需自行设置
+       ```
+        content: (params) => {
+          return (
+            <div style={{ fontSize: 12 }}>
+              <!-- icon -->
+              <div className='icon'></div>
+              <div style={{ fontSize: 14 }}>{params.name}</div>
+              <div>
+                {params.value} {`${params.percent?.toFixed(2)}%`}
+              </div>
+            </div>
+          );
+        }
+       ```
+
+    - params
+      params 是 content 需要的数据集。格式如下
+
+      ```
+      {
+          // 数据名，类目名
+          name: string,
+          // 数据在传入的 data 数组中的 index
+          dataIndex: number,
+          // 传入的原始数据项
+          data: Object,
+          value: number|Array|Object,
+          // 数据图形的颜色
+          color: string,
+          // 饼图，漏斗图的百分比
+          percent: number
+      }
+      ```
+
 - centerBlockOption
   centerBlockOption 为圆环内置内容的设置项，可不传，不传则为圆环内置内容显示
 
@@ -216,58 +226,58 @@
     },
   }
   ```
+  - radius 为 centerBlock 的区域大小
 
-  其中 content 可显示内容自定义，可返回 HTMLDOM 或者 string 类型。
+  - content
+    content 可显示内容自定义，可返回 HTMLDOM 或者 string 类型。
 
-  1. 例 1
-     当 content 需跟随高亮变化时，可使用 HTMLDOM 返回
+    1. 例 1
+      当 content 需跟随高亮变化时，可使用 ReactNode 返回
 
-     ```
-     content: (params) => {
-      return (
-        <div
-          style={{
-            position: 'absolute',
-            left: '50%',
-            top: '50%',
-            transform: 'translate(-50%, -50%)',
-          }}
-        >
-          {params.name}
-        </div>
-      );
-     },
-     ```
+      ```
+      content: (params) => {
+        return (
+          <div
+            style={{
+              position: 'absolute',
+              left: '50%',
+              top: '50%',
+              transform: 'translate(-50%, -50%)',
+            }}
+          >
+            {params.name}
+          </div>
+        );
+      },
+      ```
 
-     - params
-       params 是 content 需要的数据集。格式如下
+      - params
+        params 是 content 需要的数据集。格式如下
 
-       ```
-       {
-           // 数据名，类目名
-           name: string,
-           // 数据在传入的 data 数组中的 index
-           dataIndex: number,
-           // 传入的原始数据项
-           data: Object,
-           value: number|Array|Object,
-           // 数据图形的颜色
-           color: string,
-           // 饼图，漏斗图的百分比
-           percent: number
-       }
-       ```
+        ```
+        {
+            // 数据名，类目名
+            name: string,
+            // 数据在传入的 data 数组中的 index
+            dataIndex: number,
+            // 传入的原始数据项
+            data: Object,
+            value: number|Array|Object,
+            // 数据图形的颜色
+            color: string,
+            // 饼图，漏斗图的百分比
+            percent: number
+        }
+        ```
 
-  2. 例 2
-     当 content 为固定显示内容时，可直接返回 string 类型
+    2. 例 2
+      当 content 为固定显示内容时，可直接返回 String 类型
 
-     ```
-     content: (params) => {
-       return 'ffffffffff';
-     },
-     ```
-
-  radius 为 centerBlock 的区域大小
+      ```
+      content: (params) => {
+        return 'ffffffffff';
+      },
+      ```
 
 - autoPlay
   是否开启自动轮播，默认为 false
