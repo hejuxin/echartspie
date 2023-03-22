@@ -21,6 +21,7 @@ import {
   getParams,
   getParams2,
   getWholeParams,
+  formatAutoOpsData
 } from './utils';
 import { isNum, isEmptyArray, getNumVal } from './utils/common';
 import { getAutoSeriesIndex, getHighDataInfo } from './utils/auto';
@@ -99,8 +100,8 @@ const Pie = (props) => {
       ...highLightOption
     };
 
-    const defaultSeriesIndex = highLightOption.default?.seriesIndex || [];
-    const defaultDataIndex = highLightOption.default?.dataIndex || [];
+    const defaultSeriesIndex = highLightOption.default?.seriesIndex || formatAutoOpsData(_autoPlayOption.startOps?.seriesIndex || {}) || [];
+    const defaultDataIndex = highLightOption.default?.dataIndex || formatAutoOpsData(_autoPlayOption.startOps?.dataIndex || {}) || [];
 
     if (isEmptyArray(defaultSeriesIndex) && !isEmptyArray(defaultDataIndex)) {
       ops.defaultSeriesIndex = [0];
@@ -156,6 +157,7 @@ const Pie = (props) => {
         option: legendOption,
         data,
         seriesIndexArr: Object.keys(radiusSource),
+        color
       }),
       // todo 打平直接放到data里去
       tooltip: formatterTooltip(tooltipOption, autoInfo),
@@ -237,7 +239,7 @@ const Pie = (props) => {
     const labelObj = {};
     if (radiusSource.length > 1) {
       Object.keys(radius).forEach((key) => {
-        dataArr[key] = data[key];
+        dataArr[key] = data[key] || data[data.length - 1];
         labelObj[key] = [];
       });
     } else {
@@ -490,7 +492,8 @@ const Pie = (props) => {
 
       const param = getParams2({
         data: dataArr,
-        item: dataArr.find(item => item.dataIndex === highingVal) || {}
+        item: dataArr.find(item => item.dataIndex === highingVal) || {},
+        color
       });
 
       paramsArr.push(param);
@@ -582,6 +585,7 @@ const Pie = (props) => {
         option={centerBlockOption}
         dataSource={dataSource}
         highData={highInfo.data}
+        color={color}
       />
       <LegendBlock
         option={chartOption.current.legend}
@@ -589,6 +593,7 @@ const Pie = (props) => {
         handleLegendHover={handleLegendHover}
         handleLegendLeave={handleLegendLeave}
         handleLegendClick={handleLegendClick}
+        color={color}
       />
       {Object.keys(labelPos).map((key) => {
         if (!Object.keys(chartOption.current).length) return;
@@ -632,6 +637,7 @@ const Pie = (props) => {
             autoCurrent={highInfo.data}
             dataSource={dataSource}
             seriesOps={chartOption.current.series}
+            color={color}
           />
         </div>
       )}

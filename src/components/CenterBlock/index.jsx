@@ -4,7 +4,7 @@ import { getParams2 } from '../utils';
 import { isNum } from '../utils/common';
 
 const CenterBlock = (props) => {
-  const { option = {}, highData, dataSource } = props;
+  const { option = {}, highData, dataSource, color } = props;
 
   if (!Object.keys(option).length) return;
   const { radius = 0, margin = 0, border = 'none', padding = 0 } = option;
@@ -37,7 +37,8 @@ const CenterBlock = (props) => {
       params = getParams2({
         data: dataArr,
         // 适配旭日图模式
-        item: dataArr.find(item => item.dataIndex === highingVal) || {}
+        item: dataArr.find(item => item.dataIndex === highingVal) || {},
+        color
       })
 
     } else {
@@ -49,7 +50,8 @@ const CenterBlock = (props) => {
 
         const param = getParams2({
           data: dataArr,
-          item: dataArr.find(item => item.dataIndex === highingVal) || {}
+          item: dataArr.find(item => item.dataIndex === highingVal) || {},
+          color
         });
 
         paramsArr.push(param);

@@ -11,6 +11,7 @@ const LegendBlock = (props) => {
     handleLegendHover,
     handleLegendLeave,
     handleLegendClick,
+    color
   } = props;
   const { wrapStyle = {} } = option;
   if (option.show !== false) return;
@@ -46,12 +47,14 @@ const LegendBlock = (props) => {
         Object.keys(dataSource).map(key => {
           const valArr = dataSource[key];
           const params = valArr.map(val => {
-            return getParams2({ data, item: val });
-          })
+            return getParams2({ data, item: val, color });
+          });
+
+          const { seriesIndex } = params?.[0] || {}
 
           return (
             <LegendItem
-              key={`legend_${params.seriesIndex}_${key}`}
+              key={`legend_${seriesIndex}_${key}`}
               handleLegendHover={handleLegendHover}
               handleLegendLeave={handleLegendLeave}
               handleLegendClick={handleLegendClick}
