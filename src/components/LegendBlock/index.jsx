@@ -1,6 +1,5 @@
 import React, { useEffect, useMemo } from 'react';
-import { isNum } from '../utils/common';
-import { getParams, getParams2 } from '../utils';
+import { getParams2, isNum } from '../utils';
 import LegendItem from './item';
 import './index.css';
 // import styles from './index.module.scss'

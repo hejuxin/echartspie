@@ -1,4 +1,4 @@
-import { isNum } from './common';
+import { isNum } from '.';
 // seriesIndex为外界autoOption传入。数字/数组
 export const getAutoSeriesIndex = ({ seriesIndex = 0, keyArr = [] }) => {
   const keys = keyArr.map(item => Number(item));

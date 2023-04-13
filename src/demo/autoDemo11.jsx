@@ -37,7 +37,8 @@ const AutoDemo1 = () => {
             default: {
               seriesIndex: [0],
               dataIndex: [0],
-            }
+            },
+            stillHigh: true
           }}
           highLightCallback={(parmas) => {
             console.log('p', parmas);

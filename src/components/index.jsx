@@ -1,30 +1,29 @@
 import React, {
   useState,
   useRef,
-  useLayoutEffect,
   useMemo,
   useCallback,
 } from 'react';
 import * as echarts from 'echarts';
-import { useMount, useUpdateLayoutEffect, useUpdateEffect, useUnmount } from 'ahooks';
+import { useMount, useUpdateLayoutEffect, useUnmount } from 'ahooks';
 import { INITNUM } from './enum';
-import defaultOption, {
-  defaultColor,
-  defaultAutoOption,
-} from './defaultOption';
+import * as defaultOption from './defaultOption';
 import {
-  formatterLegend,
-  formatterTooltip,
+  getLegendOps,
   formatterData,
   formatterSunData,
   flatAndUnique,
-  getParams,
   getParams2,
   getWholeParams,
-  formatAutoOpsData
+  formatAutoOpsData,
+  isNum,
+  isEmptyArray,
+  getNumVal,
+  getAutoSeriesIndex,
+  getHighDataInfo,
+  getTooltipOps
 } from './utils';
-import { isNum, isEmptyArray, getNumVal } from './utils/common';
-import { getAutoSeriesIndex, getHighDataInfo } from './utils/auto';
+
 import { useAutoParams } from './hooks';
 import LabelBlock from './LabelBlock';
 import LegendBlock from './LegendBlock';
@@ -37,9 +36,9 @@ const Pie = (props) => {
     tooltipOption = {},
     seriesOption = {},
     data = {},
-    color = defaultColor,
+    color = defaultOption.color,
     radius = '50%',
-    autoPlay,
+    autoPlay = false,
     autoPlayOption = {},
     centerBlockOption = {},
     wrapStyle = {},
@@ -81,34 +80,42 @@ const Pie = (props) => {
     }
   }, [radius]);
 
+  const echartsSeriesIndexArr = Object.keys(radiusSource);
+
   const _autoPlayOption = useMemo(() => {
+    const ops = {
+      ...defaultOption.autoPlayOption,
+      ...autoPlayOption,
+      enable: defaultOption.autoPlay || autoPlay || false,
+    }
     let autoSeriesArr = getAutoSeriesIndex({
-      seriesIndex: autoPlayOption.seriesIndex,
-      keyArr: Object.keys(radiusSource)
+      seriesIndex: ops.seriesIndex,
+      keyArr: echartsSeriesIndexArr
     });
     return {
-      ...defaultAutoOption,
-      ...autoPlayOption,
-      enable: autoPlay || false,
+      ...ops,
       seriesIndexArr: autoSeriesArr
     };
   }, [autoPlay, autoPlayOption]);
 
   const _highOption = useMemo(() => {
     const ops = {
-      highCallback: highLightOption.callback || highLightCallback,
-      ...highLightOption
+      ...defaultOption.highLightOption,
+      ...highLightOption,
     };
 
-    const defaultSeriesIndex = highLightOption.default?.seriesIndex || formatAutoOpsData(_autoPlayOption.startOps?.seriesIndex || {}) || [];
-    const defaultDataIndex = highLightOption.default?.dataIndex || formatAutoOpsData(_autoPlayOption.startOps?.dataIndex || {}) || [];
+    ops.highCallback = ops.callback || highLightCallback
+
+    // 兼容原有startOps
+    const defaultSeriesIndex = ops.default?.seriesIndex || formatAutoOpsData(_autoPlayOption.startOps?.seriesIndex || {}) || [];
+    const defaultDataIndex = ops.default?.dataIndex || formatAutoOpsData(_autoPlayOption.startOps?.dataIndex || {}) || [];
 
     if (isEmptyArray(defaultSeriesIndex) && !isEmptyArray(defaultDataIndex)) {
       ops.defaultSeriesIndex = [0];
       ops.defaultDataIndex = defaultDataIndex;
     } else if (!isEmptyArray(defaultSeriesIndex) && !isEmptyArray(defaultDataIndex)) {
       const sArr = [], dArr = [];
-      const radiusKeyArr = Object.keys(radiusSource).map(key => Number(key));
+      const radiusKeyArr = echartsSeriesIndexArr.map(key => Number(key));
       defaultSeriesIndex.forEach(sIdx => {
         const idx = radiusKeyArr.findIndex(key => key === sIdx);
         if (idx > -1) {
@@ -124,12 +131,24 @@ const Pie = (props) => {
     return ops;
   }, [highLightOption, highLightCallback]);
 
+  const isLegendCustom = useMemo(() => {
+    const legendOps = {
+      ...defaultOption.legendOption,
+      ...legendOption
+    };
+    if (legendOps.content) {
+      const res = legendOps.content([]);
+      if (typeof res !== 'string') return true;
+    }
+    return false;
+  }, [legendOption]);
+
   const flatData = useMemo(() => {
     // 用于双饼图下图例，需打平数据
     return flatAndUnique(dataSource);
   }, [dataSource]);
 
-  const getCustomLegendData = useCallback((data) => {
+  const getCustomLegendData = useCallback((data = []) => {
     const dataArr = data.map((item) => {
       if (Array.isArray(item)) {
         return getCustomLegendData(item);
@@ -139,46 +158,81 @@ const Pie = (props) => {
     return dataArr;
   }, []);
 
-  const getOps = (data = []) => {
-    let isLegendCustom = false;
-    if (legendOption.content) {
-      const res = legendOption.content([]);
-      if (typeof res !== 'string') {
-        isLegendCustom = true;
-      }
+  const getFormatInfo = () => {
+    const dataArr = [];
+    const labelObj = {};
+    if (echartsSeriesIndexArr.length > 1) {
+      echartsSeriesIndexArr.forEach((key) => {
+        dataArr[key] = data[key] || data[data.length - 1];
+        labelObj[key] = [];
+      });
+    } else {
+      dataArr[0] = data;
+      labelObj[0] = [];
     }
 
+    let newData = [];
+    if (isPie) {
+      newData = formatterData(dataArr);
+    } else {
+      newData = [
+        formatterSunData(data, {
+          emphasis: {
+            focus: 'ancestor',
+          },
+        }),
+      ];
+    }
+
+    return {
+      newData,
+      labelObj
+    }
+  }
+
+  const getOps = (data = []) => {
     const autoInfo = {
       seriesIndex: Object.keys(autoParams.autoCurrent),
     };
+    const tooltipOps = {
+      ...defaultOption.tooltipOption,
+      ...tooltipOption
+    };
+
+    const legendOps = {
+      ...defaultOption.legendOption,
+      ...legendOption
+    };
     return {
       color,
-      legend: formatterLegend({
-        option: legendOption,
+      legend: getLegendOps({
+        option: legendOps,
         data,
-        seriesIndexArr: Object.keys(radiusSource),
+        seriesIndexArr: echartsSeriesIndexArr,
         color
       }),
       // todo 打平直接放到data里去
-      tooltip: formatterTooltip(tooltipOption, autoInfo),
+      tooltip: getTooltipOps(tooltipOps, autoInfo),
       // series: Object.keys(radius || {}).map((key, index) => {
-      series: Object.keys(radiusSource).map((key) => {
+      series: echartsSeriesIndexArr.map((key) => {
+        const commonSeries = defaultOption.seriesOption || [];
         let newSeriesOps = [];
         if (!Array.isArray(seriesOption)) {
           newSeriesOps[key] = seriesOption;
         } else {
           newSeriesOps = seriesOption;
         }
-        const seriesItem = newSeriesOps[key] || {};
+        const seriesItem = newSeriesOps[key] || newSeriesOps[newSeriesOps.length - 1] || {};
         const dataItem = data[key] || [];
         const radiusItem = (radiusSource || {})[key];
 
         const series = {
-          ...defaultOption.series[0],
+          ...(commonSeries[key] || commonSeries[commonSeries.length - 1] || {}),
           ...seriesItem,
           type,
           data: isLegendCustom ? getCustomLegendData(dataItem) : dataItem,
           labelLayout: (params) => {
+            if (!params.labelLinePoints) return;
             let dataIndex = params.dataIndex;
             if (!isLegendCustom) {
               const showData = dataItem.filter((item) => item.show);
@@ -201,9 +255,9 @@ const Pie = (props) => {
         };
 
         // 对tooltip进行格式化，打平后放到这里
-        series.tooltip = formatterTooltip(
+        series.tooltip = getTooltipOps(
           {
-            ...tooltipOption,
+            ...tooltipOps,
             ...series.tooltip,
           },
           autoInfo
@@ -235,32 +289,9 @@ const Pie = (props) => {
   };
 
   const handleInit = () => {
-    const dataArr = [];
-    const labelObj = {};
-    if (radiusSource.length > 1) {
-      Object.keys(radius).forEach((key) => {
-        dataArr[key] = data[key] || data[data.length - 1];
-        labelObj[key] = [];
-      });
-    } else {
-      dataArr[0] = data;
-      labelObj[0] = [];
-    }
+    console.log('handleInit')
+    const { labelObj, newData } = getFormatInfo();
     setLabelPos(labelObj);
-
-    let newData = [];
-    if (isPie) {
-      newData = formatterData(dataArr);
-    } else {
-      newData = [
-        formatterSunData(data, {
-          emphasis: {
-            focus: 'ancestor',
-          },
-        }),
-      ];
-    }
-
     setDataSource(newData);
 
     const autoInfo = {};
@@ -366,30 +397,7 @@ const Pie = (props) => {
   })
 
   useUpdateLayoutEffect(() => {
-    const dataArr = [];
-
-    if (radiusSource.length > 1) {
-      Object.keys(radiusSource).forEach((key) => {
-        const dataItem = data[key];
-        dataArr[key] = dataItem;
-      });
-    } else {
-      dataArr[0] = data;
-    }
-
-    // let newData = formatterData(dataArr);
-    let newData = [];
-    if (isPie) {
-      newData = formatterData(dataArr);
-    } else {
-      newData = [
-        formatterSunData(data, {
-          emphasis: {
-            focus: 'ancestor',
-          },
-        }),
-      ];
-    }
+    const { newData } = getFormatInfo();
     setDataSource(newData);
   }, [data])
 
@@ -509,7 +517,7 @@ const Pie = (props) => {
         item: dataArr.find(item => item.dataIndex === highingVal) || {}
       })
     }
-    _highOption.highCallback(paramsArr, wholeParams);
+    _highOption.highCallback && _highOption.highCallback(paramsArr, wholeParams);
   };
 
   const handleLegendHover = (name) => {
@@ -571,6 +579,11 @@ const Pie = (props) => {
     })
   }
 
+
+  const commonProps = {
+    color
+  }
+
   return (
     <div
       style={{
@@ -582,10 +595,13 @@ const Pie = (props) => {
     >
       <div ref={domRef} style={{ width: '100%', height: '100%' }}></div>
       <CenterBlock
-        option={centerBlockOption}
+        option={{
+          ...defaultOption.centerBlockOption,
+          ...centerBlockOption
+        }}
         dataSource={dataSource}
         highData={highInfo.data}
-        color={color}
+        {...commonProps}
       />
       <LegendBlock
         option={chartOption.current.legend}
@@ -593,20 +609,20 @@ const Pie = (props) => {
         handleLegendHover={handleLegendHover}
         handleLegendLeave={handleLegendLeave}
         handleLegendClick={handleLegendClick}
-        color={color}
+        {...commonProps}
       />
       {Object.keys(labelPos).map((key) => {
-        if (!Object.keys(chartOption.current).length) return;
+        if (!labelPos[key].length) return;
         const { series } = chartOption.current;
         const seriesItem = series[key];
         const labelOption = {
           normal: {
             ...seriesItem.label,
-            capStyle: seriesItem.labelLine?.capStyle,
+            capStyle: seriesItem.labelLine?.capStyle || {},
           },
           active: {
             ...seriesItem.emphasis?.label,
-            capStyle: seriesItem.emphasis?.labelLine?.capStyle,
+            capStyle: seriesItem.emphasis?.labelLine?.capStyle || {},
           },
         };
         return (
@@ -618,6 +634,7 @@ const Pie = (props) => {
               labelPos={labelPos[key]}
               key={key}
               chartsWidth={chartRef.current.getWidth()}
+              {...commonProps}
             />
           </>
         );
@@ -637,7 +654,7 @@ const Pie = (props) => {
             autoCurrent={highInfo.data}
             dataSource={dataSource}
             seriesOps={chartOption.current.series}
-            color={color}
+            {...commonProps}
           />
         </div>
       )}

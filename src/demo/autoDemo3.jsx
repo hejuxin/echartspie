@@ -23,6 +23,7 @@ const AutoDemo3 = () => {
           icon: 'circle',
           orient: 'vertical',
           content: (params) => {
+            const commonParams = params[0] || {};
             return (
               <div
                 style={{ fontSize: 12, display: 'flex', alignItems: 'center' }}
@@ -34,16 +35,23 @@ const AutoDemo3 = () => {
                       width: 10,
                       height: 10,
                       borderRadius: '50%',
-                      background: params.color,
+                      background: commonParams.color,
                       marginRight: 5,
                     }}
                   ></div>
                 </div>
                 <div>
-                  <div style={{ fontSize: 14 }}>{params.name}</div>
-                  <div>
-                    {params.value} {`${params.percent?.toFixed(2)}%`}
-                  </div>
+                  <div style={{ fontSize: 14 }}>{commonParams.name}</div>
+                  {
+                    params.map((item, index) => {
+                      return (
+                        <div key={index}>
+                          {item.value} {`${item.percent?.toFixed(2)}%`}
+                        </div>
+                      )
+                    })
+                  }
+
                 </div>
               </div>
             );
@@ -129,7 +137,7 @@ const AutoDemo3 = () => {
         autoPlay
         autoPlayOption={{
           // 主要用于设置双饼图模式下，自动轮播的层级
-          seriesIndex: [0, 2],
+          seriesIndex: [0, 1],
           // seriesIndex: 0,
         }}
       />

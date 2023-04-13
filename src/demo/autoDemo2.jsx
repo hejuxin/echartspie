@@ -41,6 +41,7 @@ const AutoDemo2 = () => {
                   left: '50%',
                   top: '50%',
                   transform: 'translate(-50%, -50%)',
+                  color: params.color
                 }}
               >
                 {params.name}

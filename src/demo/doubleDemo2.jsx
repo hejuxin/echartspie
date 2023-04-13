@@ -6,7 +6,7 @@ const DoubleDemo2 = () => {
   return (
     <div style={{ width: 300, height: 300, position: 'relative' }}>
       <Pie
-        data={[defaultData, defaultData]}
+        data={[defaultData]}
         radius={{
           0: ['40%', '70%'],
           1: ['0', '30%'],

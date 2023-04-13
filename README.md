@@ -5,8 +5,8 @@
 | data | [DataItem](#dataItem)[] | data为数据源，Array类型 | [] | true |
 | tooltipOption | Object | tooltip相关配置, [点击查看详情](#tooltipOption) | {} | false |
 | seriesOption | Object | series相关配置, [点击查看详情](#seriesOption) | {} | false |
-| auto | Boolean | 是否开启自动轮播 | false | false |
-| autoOption | Object | 自动轮播相关配置, [点击查看详情](#autoOption) | {} | false |
+| autoPlay | Boolean | 是否开启自动轮播 | false | false |
+| autoPlayOption | Object | 自动轮播相关配置, [点击查看详情](#autoPlayOption) | {} | false |
 | highLightOption | Object | 高亮相关配置, [点击查看详情](#highLightOption) | {} | false |
 | centerBlockOption | Object | 圆环内置内容相关配置, [点击查看详情](#centerBlockOption) | {} | false |
 
@@ -26,8 +26,14 @@ seriesOption
 | ----| --- | ----------| ---- | --- |
 | content |  (params) => ReactNode | 自定义label。其中params: { name: string, value, dataIndex, color, percent } | - | false |
 
-<span id='autoOption'></span>
-autoOption
+- labelLine 
+
+| 参数 | 类型 | 说明| 默认值 | require |
+| ----| --- | ----------| ---- | --- |
+| capStyle |  CSSProperties | 线末端的样式。（类似lineStyle.cap） | {} | false |
+
+<span id='autoPlayOption'></span>
+autoPlayOption
 | 参数 | 类型 | 说明| 默认值 | require |
 | ----| --- | ----------| ---- | --- |
 | time | Number | 轮播速度，单位ms | 3000 | false |

@@ -1,4 +1,4 @@
-const defaultColor = [
+const color = [
   '#77E4E4',
   '#E47676',
   '#E88E23',
@@ -27,6 +27,12 @@ const defaultData = [
   },
 ];
 
+const legendOption = {};
+
+const tooltipOption = {};
+
+const seriesOption = {};
+
 const defaultOption = {
   tooltip: {
     trigger: 'item',
@@ -49,9 +55,32 @@ const defaultOption = {
   color: defaultColor,
 };
 
-const defaultAutoOption = {
+const autoPlay = false;
+
+const autoPlayOption = {
   time: 3000,
   seriesIndex: 0,
 };
-export { defaultColor, defaultData, defaultAutoOption };
-export default defaultOption;
+
+const highLightOption = {
+  default: {
+    seriesIndex: [],
+    dataIndex: []
+  },
+  stillHight: false,
+  // callback: () => {}
+}
+
+const centerBlockOption = {};
+
+export {
+  color,
+  legendOption,
+  tooltipOption,
+  seriesOption,
+  autoPlay,
+  autoPlayOption,
+  highLightOption,
+  centerBlockOption
+};
+// export default defaultOption;
