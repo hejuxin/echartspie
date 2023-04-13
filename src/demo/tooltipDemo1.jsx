@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { defaultData } from '../components/defaultOption';
+import { defaultData } from '../mock';
 import Pie from '../components';
 
 const TooltipDemo1 = () => {

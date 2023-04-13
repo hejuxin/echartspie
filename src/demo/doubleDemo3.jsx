@@ -1,5 +1,5 @@
 import React from 'react';
-import { defaultData } from '../components/defaultOption';
+import { defaultData } from '../mock';
 import Pie from '../components';
 
 const DoubleDemo3 = () => {

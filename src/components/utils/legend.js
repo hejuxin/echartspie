@@ -3,7 +3,7 @@ import { flatAndUnique } from '.';
 export const getLegendOps = ({
   option = {},
   data = [],
-  color = defaultColor,
+  color,
   seriesIndexArr = [],
 } = {}) => {
   const legend = {

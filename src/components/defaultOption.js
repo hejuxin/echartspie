@@ -12,48 +12,11 @@ const color = [
   '#11BEEA',
 ];
 
-const defaultData = [
-  {
-    name: '区域点位',
-    value: 47,
-  },
-  {
-    name: '饮用水源点位',
-    value: 11,
-  },
-  {
-    name: '风险监控点',
-    value: 2,
-  },
-];
-
 const legendOption = {};
 
 const tooltipOption = {};
 
 const seriesOption = {};
-
-const defaultOption = {
-  tooltip: {
-    trigger: 'item',
-  },
-  legend: {},
-  series: [
-    {
-      type: 'pie',
-      radius: '50%',
-      data: [],
-      emphasis: {
-        itemStyle: {
-          shadowBlur: 10,
-          shadowOffsetX: 0,
-          shadowColor: 'rgba(0, 0, 0, 0.5)',
-        },
-      },
-    },
-  ],
-  color: defaultColor,
-};
 
 const autoPlay = false;
 
