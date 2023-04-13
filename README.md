@@ -1,15 +1,23 @@
 | 参数 | 类型 | 说明| 默认值 | require|
 | ----| --- | ----------| ---- | ---|
-| type | pie \| sunburst | pie： 饼图 <br> sunburst：旭日图 | pie | false|
+| type | pie \| sunburst | pie： 饼图 <br> sunburst：旭日图 | pie | false |
 | radius | String \| Number \| Array \| Object| 双饼图需传Object类型, 其余为单饼图 | 50% | false |
+| color | Array | 颜色数组，数据超出数组长度后会重新从头开始取颜色 | - | false |
 | data | [DataItem](#dataItem)[] | data为数据源，Array类型 | [] | true |
+| legendOption | Object | legend相关配置, [点击查看详情](#legendOption) | {} | false |
 | tooltipOption | Object | tooltip相关配置, [点击查看详情](#tooltipOption) | {} | false |
 | seriesOption | Object | series相关配置, [点击查看详情](#seriesOption) | {} | false |
 | autoPlay | Boolean | 是否开启自动轮播 | false | false |
 | autoPlayOption | Object | 自动轮播相关配置, [点击查看详情](#autoPlayOption) | {} | false |
 | highLightOption | Object | 高亮相关配置, [点击查看详情](#highLightOption) | {} | false |
 | centerBlockOption | Object | 圆环内置内容相关配置, [点击查看详情](#centerBlockOption) | {} | false |
+| wrapStyle | CSSProperties | 外部容器的样式 | {} | false |
 
+<span id='legendOption'></span>
+legendOption
+| 参数 | 类型 | 说明| 默认值 | require |
+| ----| --- | ----------| ---- | --- |
+| content |  (params, ticket, callback) => String \| ReactNode | 可参考 https://echarts.apache.org/zh/option.html#tooltip.formatter 回调函数格式 <br /> [例1 String](#tooltip1) <br /> [例2 ReactNode](#tooltip2)<br /> 为兼容双饼图模式，params为Array类型。 | - | false |
 
 <span id='tooltipOption'></span>
 tooltipOption

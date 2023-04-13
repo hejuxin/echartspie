@@ -32,20 +32,20 @@ import TooltipBlock from './TooltipBlock';
 
 const Pie = (props) => {
   const {
+    type = 'pie',
+    radius = '50%',
+    color = defaultOption.color,
+    data = {},
     legendOption = {},
     tooltipOption = {},
     seriesOption = {},
-    data = {},
-    color = defaultOption.color,
-    radius = '50%',
     autoPlay = false,
     autoPlayOption = {},
+    highLightOption = {},
     centerBlockOption = {},
     wrapStyle = {},
-    type = 'pie',
     highLightCallback = () => { },
     nodeClick = false,
-    highLightOption = {},
   } = props;
   const domRef = useRef();
   const chartRef = useRef();
