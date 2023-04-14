@@ -289,7 +289,6 @@ const Pie = (props) => {
   };
 
   const handleInit = () => {
-    console.log('handleInit')
     const { labelObj, newData } = getFormatInfo();
     setLabelPos(labelObj);
     setDataSource(newData);
@@ -331,7 +330,6 @@ const Pie = (props) => {
   useMount(() => {
     const myChart = echarts.init(domRef.current);
     chartRef.current = myChart;
-    console.log('init')
     handleInit();
 
     chartRef.current.on('mouseover', (value) => {
@@ -363,7 +361,7 @@ const Pie = (props) => {
     });
     chartRef.current.on('mouseout', (value) => {
       const { seriesIndex } = value;
-      console.log('event: mouseout', seriesIndex)
+      // console.log('event: mouseout', seriesIndex)
       if (isPie && !highLightOption?.stillHigh)
         setHighInfo((info) => {
           return {
