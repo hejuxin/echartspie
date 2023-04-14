@@ -1,12 +1,23 @@
-import React from 'react';
-import { defaultData } from '../components/defaultOption';
+import React, { useEffect, useState } from 'react';
+import { defaultData } from '../mock';
 import Pie from '../components';
 
 const TooltipDemo1 = () => {
+  const [data, setData] = useState([...defaultData]);
+  const [radius, setRadius] = useState();
+
+  // 测试数据异步情况
+  useEffect(() => {
+    setTimeout(() => {
+      setData(defaultData.concat(defaultData))
+      // setRadius('70%')
+    }, 3000)
+  }, [])
   return (
     <div style={{ width: 300, height: 300 }}>
       <Pie
-        data={defaultData}
+        data={data}
+        radius={radius}
         legendOption={{
           bottom: 0,
           icon: 'circle',

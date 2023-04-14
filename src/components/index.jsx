@@ -1,30 +1,30 @@
 import React, {
   useState,
   useRef,
-  useLayoutEffect,
   useMemo,
   useCallback,
 } from 'react';
 import * as echarts from 'echarts';
-import { useMount, useUpdateLayoutEffect, useUpdateEffect } from 'ahooks';
-
-import defaultOption, {
-  defaultColor,
-  defaultAutoOption,
-} from './defaultOption';
+import { useMount, useUpdateLayoutEffect, useUnmount } from 'ahooks';
+import { INITNUM } from './enum';
+import * as defaultOption from './defaultOption';
 import {
-  formatterLegend,
-  formatterTooltip,
+  getLegendOps,
   formatterData,
   formatterSunData,
   flatAndUnique,
-  getParams,
   getParams2,
   getWholeParams,
-  isNum,
   formatAutoOpsData,
-} from '../utils';
-import { useAutoParams } from '../hooks';
+  isNum,
+  isEmptyArray,
+  getNumVal,
+  getAutoSeriesIndex,
+  getHighDataInfo,
+  getTooltipOps
+} from './utils';
+
+import { useAutoParams } from './hooks';
 import LabelBlock from './LabelBlock';
 import LegendBlock from './LegendBlock';
 import CenterBlock from './CenterBlock';
@@ -32,366 +32,144 @@ import TooltipBlock from './TooltipBlock';
 
 const Pie = (props) => {
   const {
+    type = 'pie',
+    radius = '50%',
+    color = defaultOption.color,
+    data = {},
     legendOption = {},
     tooltipOption = {},
     seriesOption = {},
-    data = {},
-    color = defaultColor,
-    radius = '50%',
-    autoPlay,
+    autoPlay = false,
     autoPlayOption = {},
+    highLightOption = {},
     centerBlockOption = {},
     wrapStyle = {},
-    type = 'pie',
-    highLightCallback = () => {},
+    highLightCallback = () => { },
     nodeClick = false,
-    highLightOption = {},
   } = props;
   const domRef = useRef();
   const chartRef = useRef();
   const chartOption = useRef({});
-  const [init, setInit] = useState(false);
   const autoParams = useAutoParams();
   const [dataSource, setDataSource] = useState([]);
   const [labelPos, setLabelPos] = useState({});
-  const [radiusSource, setRadiusSource] = useState([]);
+
+  // const [highInfo, setHighInfo] = useState({});
+  const [highInfo, setHighInfo] = useState({
+    data: {},
+    showTip: false
+  });
 
   const isPie = useMemo(() => {
     return type !== 'sunburst';
   }, [type]);
 
-  const getCustomLegendData = useCallback((data) => {
+  const radiusSource = useMemo(() => {
+    if (
+      typeof radius === 'string' ||
+      typeof radius === 'number' ||
+      (Array.isArray(radius) && radius.length)
+    ) {
+      return [radius];
+    }
+
+    if (typeof radius === 'object') {
+      return Object.keys(radius).map(key => {
+        return radius[key]
+      });
+    }
+  }, [radius]);
+
+  const echartsSeriesIndexArr = Object.keys(radiusSource);
+
+  const _autoPlayOption = useMemo(() => {
+    const ops = {
+      ...defaultOption.autoPlayOption,
+      ...autoPlayOption,
+      enable: defaultOption.autoPlay || autoPlay || false,
+    }
+    let autoSeriesArr = getAutoSeriesIndex({
+      seriesIndex: ops.seriesIndex,
+      keyArr: echartsSeriesIndexArr
+    });
+    return {
+      ...ops,
+      seriesIndexArr: autoSeriesArr
+    };
+  }, [autoPlay, autoPlayOption]);
+
+  const _highOption = useMemo(() => {
+    const ops = {
+      ...defaultOption.highLightOption,
+      ...highLightOption,
+    };
+
+    ops.highCallback = ops.callback || highLightCallback
+
+    // 兼容原有startOps
+    const defaultSeriesIndex = ops.default?.seriesIndex || formatAutoOpsData(_autoPlayOption.startOps?.seriesIndex || {}) || [];
+    const defaultDataIndex = ops.default?.dataIndex || formatAutoOpsData(_autoPlayOption.startOps?.dataIndex || {}) || [];
+
+    if (isEmptyArray(defaultSeriesIndex) && !isEmptyArray(defaultDataIndex)) {
+      ops.defaultSeriesIndex = [0];
+      ops.defaultDataIndex = defaultDataIndex;
+    } else if (!isEmptyArray(defaultSeriesIndex) && !isEmptyArray(defaultDataIndex)) {
+      const sArr = [], dArr = [];
+      const radiusKeyArr = echartsSeriesIndexArr.map(key => Number(key));
+      defaultSeriesIndex.forEach(sIdx => {
+        const idx = radiusKeyArr.findIndex(key => key === sIdx);
+        if (idx > -1) {
+          sArr.push(sIdx);
+          const data = getNumVal(defaultDataIndex[idx], defaultDataIndex[defaultDataIndex.length - 1]);
+          dArr.push(data);
+        }
+      })
+      ops.defaultSeriesIndex = sArr;
+      ops.defaultDataIndex = dArr;
+    }
+
+    return ops;
+  }, [highLightOption, highLightCallback]);
+
+  const isLegendCustom = useMemo(() => {
+    const legendOps = {
+      ...defaultOption.legendOption,
+      ...legendOption
+    };
+    if (legendOps.content) {
+      const res = legendOps.content([]);
+      if (typeof res !== 'string') return true;
+    }
+    return false;
+  }, [legendOption]);
+
+  const flatData = useMemo(() => {
+    // 用于双饼图下图例，需打平数据
+    return flatAndUnique(dataSource);
+  }, [dataSource]);
+
+  const getCustomLegendData = useCallback((data = []) => {
     const dataArr = data.map((item) => {
       if (Array.isArray(item)) {
         return getCustomLegendData(item);
       }
-      return item.show ? item : null;
+      return item.show ? item : -1;
     });
-    if (dataArr.filter(Boolean).length === 0)
-      return new Array(dataArr.length).fill(-1);
     return dataArr;
   }, []);
-  const getOps = (data = []) => {
-    let isLegendCustom = false;
-    if (legendOption.content) {
-      const res = legendOption.content({});
-      if (typeof res !== 'string') {
-        isLegendCustom = true;
-      }
-    }
 
-    const autoInfo = {
-      seriesIndex: Object.keys(autoParams.autoCurrent),
-    };
-    if (isPie) {
-      return {
-        color,
-        legend: formatterLegend({
-          option: legendOption,
-          data,
-          seriesIndexArr: Object.keys(radiusSource),
-        }),
-        // todo 打平直接放到data里去
-        tooltip: formatterTooltip(tooltipOption, autoInfo),
-        // series: Object.keys(radius || {}).map((key, index) => {
-        series: Object.keys(radiusSource).map((key) => {
-          let newSeriesOps = [];
-          if (!Array.isArray(seriesOption)) {
-            newSeriesOps[key] = seriesOption;
-          } else {
-            newSeriesOps = seriesOption;
-          }
-          const seriesItem = newSeriesOps[key] || {};
-          const dataItem = data[key] || [];
-          const radiusItem = (radiusSource || {})[key];
-
-          const series = {
-            ...defaultOption.series[0],
-            ...seriesItem,
-            type,
-            data: isLegendCustom ? getCustomLegendData(dataItem) : dataItem,
-            labelLayout: (params) => {
-              let dataIndex = params.dataIndex;
-              if (!isLegendCustom) {
-                const showData = dataItem.filter((item) => item.show);
-                dataIndex = showData[params.dataIndex]?.dataIndex;
-              }
-
-              setTimeout(() => {
-                setLabelPos((labelPosObj) => {
-                  let newArr = [...(labelPosObj[key] || [])];
-                  newArr[dataIndex] = params.labelLinePoints;
-                  const newObj = {
-                    ...labelPosObj,
-                    [key]: newArr,
-                  };
-
-                  return newObj;
-                });
-              }, 0);
-            },
-          };
-
-          // 对tooltip进行格式化
-          // series.tooltip = formatterTooltip(series.tooltip, autoInfo);
-
-          // 打平后放到这里
-          series.tooltip = formatterTooltip(
-            {
-              ...tooltipOption,
-              ...series.tooltip,
-            },
-            autoInfo
-          );
-
-          // 对label进行格式化
-          const { label = {} } = series;
-          if (label.content) {
-            label.formatter = () => {
-              return '';
-            };
-          }
-
-          const labelLineExtendLength = label.lineExtendLength;
-          if (label.isLineExtend && isNum(labelLineExtendLength)) {
-            series.labelLine = {
-              ...series.labelLine,
-              length2: labelLineExtendLength,
-            };
-          }
-
-          if (radiusItem) {
-            series.radius = radiusItem;
-          }
-
-          return series;
-        }),
-      };
-    }
-
-    return {
-      color,
-      legend: {
-        show: false,
-      },
-      tooltip: formatterTooltip(tooltipOption),
-      series: Object.keys(radiusSource).map((key) => {
-        let newSeriesOps = [];
-        if (!Array.isArray(seriesOption)) {
-          newSeriesOps[key] = seriesOption;
-        } else {
-          newSeriesOps = seriesOption;
-        }
-        const seriesItem = newSeriesOps[key] || {};
-        const dataItem = data[key] || [];
-        const radiusItem = (radiusSource || {})[key];
-
-        const series = {
-          ...defaultOption.series[0],
-          ...seriesItem,
-          type,
-          data: dataItem,
-          nodeClick,
-        };
-
-        if (radiusItem) {
-          series.radius = radiusItem;
-        }
-
-        // todo sunburst没有tooltip配置项
-
-        return series;
-      }),
-    };
-  };
-
-  const _autoPlayOption = useMemo(() => {
-    return {
-      ...defaultAutoOption,
-      ...autoPlayOption,
-      enable: autoPlay || false,
-    };
-  }, [autoPlay, autoPlayOption]);
-
-  const autoStartInfo = useMemo(() => {
-    const autoStartOps = autoPlayOption.startOps || {};
-    if (autoStartOps.dataIndex) {
-      return {
-        seriesIndex: formatAutoOpsData(autoStartOps?.seriesIndex),
-        dataIndex: formatAutoOpsData(autoStartOps?.dataIndex),
-      };
-    }
-
-    return {};
-  }, [autoPlayOption]);
-
-  const createInterval = () => {
-    // console.log('createInterval', dataSource);
-    autoParams.createInterval({
-      ..._autoPlayOption,
-      dataSource,
-    });
-  };
-  const handleHightlight = ({ seriesIndex, dataIndex, isShowTip = false }) => {
-    const flatData = flatAndUnique(dataSource);
-    let wholeTree;
-    let item;
-    let params;
-    if (!isPie) {
-      if (dataIndex > 0) {
-        item = flatData[dataIndex - 1];
-        wholeTree = getWholeParams({
-          data: dataSource[0],
-          item,
-        });
-        params = getParams2({
-          data: dataSource[0],
-          item,
-        });
-        params = {
-          ...params,
-          ...item,
-        };
-      }
-    } else {
-      dataIndex = dataIndex[seriesIndex];
-      item = flatData[dataIndex];
-      params = getParams2({
-        data: dataSource[0],
-        item,
-      });
-    }
-
-    highLightCallback(params, wholeTree);
-
-    const seriesIndexArr = isNum(seriesIndex) ? [seriesIndex] : seriesIndex;
-    const dataInfo = {
-      batch: seriesIndexArr.map((item) => {
-        return {
-          seriesIndex: item,
-          dataIndex: isNum(dataIndex) ? dataIndex : dataIndex[item],
-        };
-      }),
-    };
-    chartRef.current.dispatchAction({
-      type: 'downplay',
-    });
-    chartRef.current.dispatchAction({
-      type: 'hideTip',
-    });
-
-    setTimeout(() => {
-      chartRef.current.dispatchAction({
-        // type: 'select',
-        type: 'highlight',
-        ...dataInfo,
-      });
-    }, 0);
-
-    if (isShowTip) {
-      chartRef.current.dispatchAction({
-        type: 'showTip',
-        ...dataInfo,
-      });
-    }
-  };
-
-  const handleInit = () => {
-    let _autoSeriesArr = formatAutoOpsData(autoPlayOption.seriesIndex);
-
-    const radiusArr = [];
+  const getFormatInfo = () => {
     const dataArr = [];
-    const autoInfo = {};
     const labelObj = {};
-    if (radius) {
-      if (
-        typeof radius === 'string' ||
-        typeof radius === 'number' ||
-        (Array.isArray(radius) && radius.length)
-      ) {
-        radiusArr[0] = radius;
-        dataArr[0] = data;
-        labelObj[0] = [];
-
-        if (!_autoSeriesArr.length) {
-          // dataIndex 存在才有意义
-          if (autoStartInfo.dataIndex) {
-            autoInfo[0] = isNum(autoStartInfo.dataIndex[0])
-              ? autoStartInfo.dataIndex[0]
-              : -1;
-          } else {
-            autoInfo[0] = -1;
-          }
-        }
-        // autoInfo[0] = -1;
-      } else if (typeof radius === 'object') {
-        Object.keys(radius).forEach((key) => {
-          const dataItem = data[key];
-          radiusArr[key] = radius[key];
-          dataArr[key] = dataItem;
-          labelObj[key] = [];
-
-          if (!_autoSeriesArr.length) {
-            const { seriesIndex: sIdx = [], dataIndex: dIdx } = autoStartInfo;
-            // 先判断轮播的series有没有start。
-            // 1. 如果有，则取dataIndex中对应位置的data。
-            //  - 若该位置没有，则代表两个Index长度不同。此时取dataIndex最后一项。最后一项也没有则为-1
-            // 2. 若没有，则代表没有start。直接-1
-            if (sIdx && dIdx) {
-              const autoIdx = sIdx.indexOf(key);
-              if (autoIdx > -1) {
-                autoInfo[key] = isNum(dIdx[autoIdx])
-                  ? dIdx[autoIdx]
-                  : isNum(dIdx[dIdx.length - 1])
-                  ? dIdx[dIdx.length - 1]
-                  : -1;
-              } else {
-                autoInfo[key] = -1;
-              }
-            } else if (dIdx) {
-              // 若没有series。直接取取dataIndex中对应位置的data。
-              autoInfo[key] = isNum(dIdx[key]) ? dIdx[key] : -1;
-            } else {
-              autoInfo[key] = -1;
-            }
-
-            // autoInfo[key] = 0;
-          }
-          // autoInfo[key] = -1;
-        });
-      }
-    }
-
-    if (_autoSeriesArr.length) {
-      _autoSeriesArr.forEach((key) => {
-        const { seriesIndex: sIdx = [], dataIndex: dIdx } = autoStartInfo;
-        // 先判断轮播的series有没有start。
-        // 1. 如果有，则取dataIndex中对应位置的data。
-        //  - 若该位置没有，则代表两个Index长度不同。此时取dataIndex最后一项。最后一项也没有则为-1
-        // 2. 若没有，则代表没有start。直接-1
-        if (sIdx && dIdx) {
-          const autoIdx = sIdx.indexOf(key);
-          if (autoIdx > -1) {
-            autoInfo[key] = isNum(dIdx[autoIdx])
-              ? dIdx[autoIdx]
-              : isNum(dIdx[dIdx.length - 1])
-              ? dIdx[dIdx.length - 1]
-              : -1;
-          } else {
-            autoInfo[key] = -1;
-          }
-        } else if (dIdx) {
-          // 若没有series。直接取取dataIndex中对应位置的data。
-          autoInfo[key] = isNum(dIdx[key]) ? dIdx[key] : -1;
-        } else {
-          autoInfo[key] = -1;
-        }
+    if (echartsSeriesIndexArr.length > 1) {
+      echartsSeriesIndexArr.forEach((key) => {
+        dataArr[key] = data[key] || data[data.length - 1];
+        labelObj[key] = [];
       });
+    } else {
+      dataArr[0] = data;
+      labelObj[0] = [];
     }
-    setRadiusSource(radiusArr);
-    setLabelPos(labelObj);
-
-    autoParams.init(autoInfo);
 
     let newData = [];
     if (isPie) {
@@ -406,145 +184,222 @@ const Pie = (props) => {
       ];
     }
 
+    return {
+      newData,
+      labelObj
+    }
+  }
+
+  const getOps = (data = []) => {
+    const autoInfo = {
+      seriesIndex: Object.keys(autoParams.autoCurrent),
+    };
+    const tooltipOps = {
+      ...defaultOption.tooltipOption,
+      ...tooltipOption
+    };
+
+    const legendOps = {
+      ...defaultOption.legendOption,
+      ...legendOption
+    };
+    return {
+      color,
+      legend: getLegendOps({
+        option: legendOps,
+        data,
+        seriesIndexArr: echartsSeriesIndexArr,
+        color
+      }),
+      // todo 打平直接放到data里去
+      tooltip: getTooltipOps(tooltipOps, autoInfo),
+      // series: Object.keys(radius || {}).map((key, index) => {
+      series: echartsSeriesIndexArr.map((key) => {
+        const commonSeries = defaultOption.seriesOption || [];
+        let newSeriesOps = [];
+        if (!Array.isArray(seriesOption)) {
+          newSeriesOps[key] = seriesOption;
+        } else {
+          newSeriesOps = seriesOption;
+        }
+        const seriesItem = newSeriesOps[key] || newSeriesOps[newSeriesOps.length - 1] || {};
+        const dataItem = data[key] || [];
+        const radiusItem = (radiusSource || {})[key];
+
+        const series = {
+          ...(commonSeries[key] || commonSeries[commonSeries.length - 1] || {}),
+          ...seriesItem,
+          type,
+          data: isLegendCustom ? getCustomLegendData(dataItem) : dataItem,
+          labelLayout: (params) => {
+            if (!params.labelLinePoints) return;
+            let dataIndex = params.dataIndex;
+            if (!isLegendCustom) {
+              const showData = dataItem.filter((item) => item.show);
+              dataIndex = showData[params.dataIndex]?.dataIndex;
+            }
+
+            setTimeout(() => {
+              setLabelPos((labelPosObj) => {
+                let newArr = [...(labelPosObj[key] || [])];
+                newArr[dataIndex] = params.labelLinePoints;
+                const newObj = {
+                  ...labelPosObj,
+                  [key]: newArr,
+                };
+
+                return newObj;
+              });
+            }, 0);
+          },
+        };
+
+        // 对tooltip进行格式化，打平后放到这里
+        series.tooltip = getTooltipOps(
+          {
+            ...tooltipOps,
+            ...series.tooltip,
+          },
+          autoInfo
+        );
+
+        // 对label进行格式化
+        const { label = {} } = series;
+        if (label.content) {
+          label.formatter = () => {
+            return '';
+          };
+        }
+
+        const labelLineExtendLength = label.lineExtendLength;
+        if (label.isLineExtend && isNum(labelLineExtendLength)) {
+          series.labelLine = {
+            ...series.labelLine,
+            length2: labelLineExtendLength,
+          };
+        }
+
+        if (radiusItem) {
+          series.radius = radiusItem;
+        }
+
+        return series;
+      }),
+    };
+  };
+
+  const handleInit = () => {
+    console.log('handleInit')
+    const { labelObj, newData } = getFormatInfo();
+    setLabelPos(labelObj);
     setDataSource(newData);
 
-    setInit(true);
+    const autoInfo = {};
+
+    const defaultSeriesIndex = _highOption.defaultSeriesIndex || [];
+    const defaultDataIndex = _highOption.defaultDataIndex
+    // 自动轮播的初始项
+    _autoPlayOption.seriesIndexArr.forEach(key => {
+      if (isEmptyArray(defaultSeriesIndex)) {
+        autoInfo[key] = INITNUM;
+      } else {
+        const keyIndex = defaultSeriesIndex.findIndex(sIdx => key === sIdx);
+        autoInfo[key] = defaultDataIndex[keyIndex];
+      }
+    })
+    autoParams.init(autoInfo);
+
+
+    // 默认高亮
+    const high = {};
+    defaultSeriesIndex.forEach((sIdx, index) => {
+      high[sIdx] = defaultDataIndex[index];
+    })
+    setHighInfo({
+      ...highInfo,
+      data: high
+    });
   };
+
+  const createInterval = useCallback(() => {
+    autoParams.createInterval({
+      ..._autoPlayOption,
+      dataSource,
+    });
+  }, [dataSource]);
 
   useMount(() => {
     const myChart = echarts.init(domRef.current);
     chartRef.current = myChart;
+    console.log('init')
     handleInit();
 
-    // window.addEventListener('resize', () => {
-    //   if (myChart && myChart.dispose) {
-    //     myChart.dispose(domRef.current);
-    //     const newChart = echarts.init(domRef.current);
-    //     chartRef.current = newChart;
-    //   }
-    //   handleInit();
-    // });
+    chartRef.current.on('mouseover', (value) => {
+      const { seriesIndex, dataIndex, data } = value;
 
-    return () => {
-      autoParams.removeInterval();
-      myChart.dispose(domRef.current);
-    };
-  }, []);
-
-  useUpdateLayoutEffect(() => {
-    if (init) {
-      let _autoSeriesArr = formatAutoOpsData(autoPlayOption.seriesIndex);
-      const { seriesIndex: sIdx, dataIndex: dIdx } = autoStartInfo;
-      if (dIdx) {
-        handleHightlight({
-          seriesIndex: sIdx || _autoSeriesArr || [],
-          dataIndex: dIdx || [],
-        });
-      }
-
-      chartRef.current.on('mouseover', (value) => {
-        const { seriesIndex, dataIndex, data } = value;
-
-        if (!isPie) {
-          let wholeTree = getWholeParams({
-            data: dataSource[0],
-            item: data,
-          });
-
-          const index = (dataSource[0] || []).findIndex(
-            (item) => item.name === wholeTree.name
-          );
-
-          autoParams.removeInterval(() => {
-            const current = autoParams.getWip();
-            autoParams.setWip({
-              ...current,
-              [seriesIndex]: index,
-            });
-          });
-
-          autoParams.setAutoCurrent((obj) => {
-            return {
-              ...obj,
-              [seriesIndex]: index,
-            };
-          });
-
-          if (!_autoPlayOption.enable) {
-            highLightCallback(data, wholeTree);
-          }
-          return;
-        }
-
-        autoParams.removeInterval(() => {
+      // 若有自动，移除自动
+      // 记录当前位置，下次轮播从这个点开始
+      if (_autoPlayOption.enable) {
+        autoParams.removeInterval();
+        // 若该层存在自动轮播，则记录当前高亮位置，作为下次轮播起始点
+        if (_autoPlayOption.seriesIndexArr.includes(Number(seriesIndex))) {
           const current = autoParams.getWip();
           autoParams.setWip({
             ...current,
             [seriesIndex]: dataIndex,
           });
-        });
+        }
+      }
 
-        // todo
-        // if (_autoPlayOption.enable) {
-        //   autoParams.setAutoCurrent((obj) => {
-        //     return {
-        //       ...obj,
-        //       [seriesIndex]: dataIndex,
-        //     };
-        //   });
-        // }
-        autoParams.setAutoCurrent((obj) => {
+      setHighInfo((info) => {
+        return {
+          ...info,
+          data: {
+            ...info?.data,
+            [seriesIndex]: dataIndex
+          }
+        }
+      })
+    });
+    chartRef.current.on('mouseout', (value) => {
+      const { seriesIndex } = value;
+      console.log('event: mouseout', seriesIndex)
+      if (isPie && !highLightOption?.stillHigh)
+        setHighInfo((info) => {
           return {
-            ...obj,
-            [seriesIndex]: dataIndex,
-          };
-        });
+            ...info,
+            data: {
+              ...info?.data,
+              [seriesIndex]: INITNUM
+            }
+          }
+        })
 
-        if (!_autoPlayOption.enable) {
-          highLightCallback(data);
-        }
-        // handleHightlight({ seriesIndex, dataIndex, isShowTip: true });
-      });
-      chartRef.current.on('mouseout', (value) => {
-        const { seriesIndex } = value;
-        if (isPie && !!highLightOption.isOutDown) {
-          autoParams.setAutoCurrent((obj) => {
-            return {
-              ...obj,
-              [seriesIndex]: -1,
-            };
-          });
-        }
-        // autoParams.setAutoCurrent((obj) => {
-        //   if (isPie && !!highLightOption.isOutDown) {
-        //     return {
-        //       ...obj,
-        //       [seriesIndex]: -1,
-        //     };
-        //   }
-        // });
+      if (_autoPlayOption.enable) {
+        // 直接createInterval 会拿不到最新的dataSource
+        // createInterval();
+        setDataSource((nowData) => [...nowData])
+      }
+    });
 
-        // todo
-        // if (_autoPlayOption.enable) {
-        //   createInterval();
-        // }
-        createInterval();
-      });
+    chartRef.current.on('legendselectchanged', (value) => {
+      onLegendChange(value);
+    });
 
-      chartRef.current.on('legendselectchanged', (value) => {
-        const { selected = {} } = value;
-        const newData = Object.values(dataSource).map((data) => {
-          return data.map((val) => {
-            return {
-              ...val,
-              show: selected?.[val.name],
-            };
-          });
-        });
-        setDataSource(newData);
-      });
-    }
-  }, [init]);
+    window.addEventListener('resize', () => {
+      myChart.resize()
+    })
+  });
+
+  useUnmount(() => {
+    autoParams.removeInterval();
+    chartRef.current.dispose(domRef.current);
+  })
+
+  useUpdateLayoutEffect(() => {
+    const { newData } = getFormatInfo();
+    setDataSource(newData);
+  }, [data])
 
   useUpdateLayoutEffect(() => {
     const ops = getOps(dataSource);
@@ -556,39 +411,120 @@ const Pie = (props) => {
   useUpdateLayoutEffect(() => {
     if (!_autoPlayOption.enable || !autoParams.autoIdx) return;
     let dataIndex = autoParams.autoCurrent;
-    let seriesIndex = autoParams.autoIdx
-      ? _autoPlayOption.seriesIndex
-      : Object.keys(autoParams.autoCurrent);
 
-    let isShowTip =
-      typeof _autoPlayOption.showTip === 'boolean'
-        ? _autoPlayOption.showTip
-        : true;
-    if (!isPie) {
-      seriesIndex = 0;
-      const autoVal = dataIndex[seriesIndex];
-      if (autoVal === -1) return;
-      const id = dataSource[seriesIndex]?.[autoVal]?.id;
-      dataIndex = id + 1;
+    let isShowTip = false;
 
-      isShowTip = false;
-    } else {
-      dataIndex = autoParams.autoCurrent;
+    if (isPie) {
+      isShowTip =
+        typeof _autoPlayOption.showTip === 'boolean'
+          ? _autoPlayOption.showTip
+          : true;
     }
 
+    setHighInfo({
+      // ...dataIndex
+      data: {
+        ...dataIndex
+      },
+      showTip: isShowTip
+    })
+  }, [autoParams.autoCurrent]);
+
+  useUpdateLayoutEffect(() => {
+    const highData = highInfo.data;
+    const seriesArr = Object.keys(highData);
+    if (!seriesArr.length) return;
+
     const _params = {
+      seriesIndex: seriesArr,
+      dataIndex: highData,
+      isShowTip: highInfo.showTip,
+      // needHighlight: false
+    };
+
+    handleHightlight(_params);
+  }, [highInfo]);
+
+  const handleHightlight = ({ seriesIndex, dataIndex, isShowTip = false, needHighlight = true }) => {
+    // 鼠标移开
+    // todo
+    if (dataIndex === INITNUM) {
+      if (_autoPlayOption.enable) {
+        chartRef.current.dispatchAction({
+          type: 'downplay',
+        });
+        chartRef.current.dispatchAction({
+          type: 'hideTip',
+        });
+      }
+
+      return;
+    }
+
+    const dataInfo = getHighDataInfo({
       seriesIndex,
       dataIndex,
-      isShowTip,
-    };
-    handleHightlight(_params);
-  }, [autoParams.autoCurrent]);
+      isPie
+    })
+
+    // if (_autoPlayOption.enable) {
+    chartRef.current.dispatchAction({
+      type: 'downplay',
+    });
+
+    setTimeout(() => {
+      chartRef.current.dispatchAction({
+        // type: 'select',
+        type: 'highlight',
+        ...dataInfo,
+      });
+    }, 0);
+    // }
+
+    if (isShowTip) {
+      chartRef.current.dispatchAction({
+        type: 'hideTip',
+      });
+
+      chartRef.current.dispatchAction({
+        type: 'showTip',
+        ...dataInfo,
+      });
+    }
+
+    let paramsArr = [];
+
+    seriesIndex.map(highingKey => {
+      const highingVal = dataIndex[highingKey];
+      const dataArr = dataSource[highingKey];
+
+      const param = getParams2({
+        data: dataArr,
+        item: dataArr.find(item => item.dataIndex === highingVal) || {},
+        color
+      });
+
+      paramsArr.push(param);
+    })
+
+    let wholeParams;
+
+    if (!isPie) {
+      const dataArr = dataSource[0];
+      const highingVal = dataIndex[0];
+      wholeParams = getWholeParams({
+        data: dataArr,
+        item: dataArr.find(item => item.dataIndex === highingVal) || {}
+      })
+    }
+    _highOption.highCallback && _highOption.highCallback(paramsArr, wholeParams);
+  };
 
   const handleLegendHover = (name) => {
     autoParams.removeInterval();
 
     const legendObj = {};
-    flatAndUnique(dataSource).forEach((item) => {
+    flatData.forEach((item) => {
       const { name, seriesIndex, dataIndex } = item;
       if (!legendObj[name]) {
         legendObj[name] = {};
@@ -611,68 +547,42 @@ const Pie = (props) => {
   };
 
   const handleLegendClick = (name) => {
-    const newData = [...dataSource];
-    flatAndUnique(dataSource).forEach((item) => {
+    const selected = {};
+    flatData.forEach(item => {
       if (item.name === name) {
-        const { seriesIndex, dataIndex } = item;
-        const show = newData[seriesIndex][dataIndex].show;
-        newData[seriesIndex][dataIndex].show = !show;
+        selected[item.name] = !item.show;
+      } else {
+        selected[item.name] = item.show;
       }
-    });
-
-    setDataSource(newData);
+    })
+    const value = {
+      name,
+      selected,
+      type: 'customlegendselectchanged'
+    }
+    onLegendChange(value);
   };
-  const getCenterContent = () => {
-    let seriesIndex = -1;
-    // todo 是否有问题 为啥是autoParams 如果没开auto会咋样
-    const idxObj = autoParams.autoCurrent;
-    Object.keys(idxObj).forEach((key) => {
-      if (typeof idxObj[key] === 'number' && idxObj[key] !== -1) {
-        seriesIndex = key;
-      }
-    });
 
-    if (seriesIndex === -1) return;
+  const onLegendChange = (value) => {
+    const { selected = {}, name } = value;
 
-    const data = dataSource[seriesIndex];
-    const flatData = flatAndUnique(data);
-
-    let params = {};
-    if (idxObj[seriesIndex] !== -1) {
-      let data = flatData;
-      let index = idxObj[seriesIndex];
-
-      if (!isPie) {
-        data = [''].concat(flatData);
-
-        const autoVal = idxObj[seriesIndex];
-        const id = dataSource[seriesIndex]?.[autoVal]?.id;
-        index = id + 1;
-      }
-      params = getParams({
-        data,
-        index,
-        color,
+    setDataSource((nowData) => {
+      const newData = [...nowData];
+      flatAndUnique(nowData).forEach((item) => {
+        if (item.name === name) {
+          const { seriesIndex, dataIndex } = item;
+          newData[seriesIndex][dataIndex].show = selected[name] || false;
+        }
       });
-    }
 
-    let wholeTree;
+      return newData;
+    })
+  }
 
-    if (!isPie && flatData.length) {
-      const item = flatData.find((flatItem) => params.name === flatItem.name);
-      // wholeTree = getWholeParams({
-      //   data,
-      //   item,
-      // });
-    }
 
-    const { content } = centerBlockOption;
-    if (!content) return;
-    if (typeof content === 'function') {
-      return content(params, wholeTree);
-    }
-    return content;
-  };
+  const commonProps = {
+    color
+  }
 
   return (
     <div
@@ -684,27 +594,35 @@ const Pie = (props) => {
       }}
     >
       <div ref={domRef} style={{ width: '100%', height: '100%' }}></div>
-      {chartOption.current.legend?.show === false && (
-        <LegendBlock
-          option={chartOption.current.legend}
-          data={flatAndUnique(dataSource)}
-          handleLegendHover={handleLegendHover}
-          handleLegendLeave={handleLegendLeave}
-          handleLegendClick={handleLegendClick}
-        />
-      )}
+      <CenterBlock
+        option={{
+          ...defaultOption.centerBlockOption,
+          ...centerBlockOption
+        }}
+        dataSource={dataSource}
+        highData={highInfo.data}
+        {...commonProps}
+      />
+      <LegendBlock
+        option={chartOption.current.legend}
+        data={flatData}
+        handleLegendHover={handleLegendHover}
+        handleLegendLeave={handleLegendLeave}
+        handleLegendClick={handleLegendClick}
+        {...commonProps}
+      />
       {Object.keys(labelPos).map((key) => {
-        if (!Object.keys(chartOption.current).length) return;
+        if (!labelPos[key].length) return;
         const { series } = chartOption.current;
         const seriesItem = series[key];
         const labelOption = {
           normal: {
             ...seriesItem.label,
-            capStyle: seriesItem.labelLine?.capStyle,
+            capStyle: seriesItem.labelLine?.capStyle || {},
           },
           active: {
             ...seriesItem.emphasis?.label,
-            capStyle: seriesItem.emphasis?.labelLine?.capStyle,
+            capStyle: seriesItem.emphasis?.labelLine?.capStyle || {},
           },
         };
         return (
@@ -716,14 +634,12 @@ const Pie = (props) => {
               labelPos={labelPos[key]}
               key={key}
               chartsWidth={chartRef.current.getWidth()}
+              {...commonProps}
             />
           </>
         );
       })}
-      {!!Object.keys(centerBlockOption).length && (
-        <CenterBlock {...centerBlockOption}>{getCenterContent()}</CenterBlock>
-      )}
-      {Object.keys(autoParams.autoCurrent).length > 1 && (
+      {Object.keys(highInfo.data).length > 1 && (
         <div
           style={{
             position: 'absolute',
@@ -735,9 +651,10 @@ const Pie = (props) => {
           }}
         >
           <TooltipBlock
-            autoCurrent={autoParams.autoCurrent}
+            autoCurrent={highInfo.data}
             dataSource={dataSource}
             seriesOps={chartOption.current.series}
+            {...commonProps}
           />
         </div>
       )}

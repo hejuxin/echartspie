@@ -1,5 +1,5 @@
 import React, { useRef, useLayoutEffect } from 'react';
-import { defaultData } from '../components/defaultOption';
+import { defaultData } from '../mock';
 import Pie from '../components';
 import * as echarts from 'echarts';
 
@@ -109,7 +109,7 @@ const SunburstDemo1 = () => {
             },
             emphasis: {},
           }}
-          // autoPlay
+        // autoPlay
         />
       </div>
     </>

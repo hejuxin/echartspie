@@ -1,31 +1,32 @@
-import React, { useMemo } from 'react';
-import { getParams, isNum } from '../../utils';
+import React, { useEffect, useMemo } from 'react';
+import { getParams2, isNum } from '../utils';
+import LegendItem from './item';
 import './index.css';
 // import styles from './index.module.scss'
 const LegendBlock = (props) => {
   const {
-    option,
+    option = {},
     data,
     handleLegendHover,
     handleLegendLeave,
     handleLegendClick,
+    color
   } = props;
   const { wrapStyle = {} } = option;
+  if (option.show !== false) return;
   const dataSource = useMemo(() => {
     const obj = {};
     data.forEach(item => {
       const { name, seriesIndex, dataIndex } = item;
-      // if (!obj[name]) {
-      //   obj[name] = {};
-      // }
-
-      // obj[name][seriesIndex] = dataIndex;
 
       if (!obj[name]) {
-        obj[name] = item;
+        obj[name] = [];
       }
+
+      obj[name].push(item);
     })
-    return Object.values(obj)
+
+    return obj
   }, [data])
 
   return (
@@ -41,23 +42,29 @@ const LegendBlock = (props) => {
         ...wrapStyle
       }}
     >
-      {dataSource.map((item, index) => {
-        const params = getParams({ data: dataSource, index });
-        const { name, show } = item;
-        return (
-          <div
-            onMouseOver={() => handleLegendHover(name)}
-            onMouseOut={() => handleLegendLeave()}
-            onClick={() => handleLegendClick(name)}
-            // className={`${styles['legend-item']} 
-            // ${show ? '' : ` ${styles['noselect-item']}`}`}
-            className={`legend-item${show ? '' : ' noselect-item'}`}
-            key={`legend_${name}`}
-          >
-            {option.content && option.content(params)}
-          </div>
-        );
-      })}
+      {
+        Object.keys(dataSource).map(key => {
+          const valArr = dataSource[key];
+          const params = valArr.map(val => {
+            return getParams2({ data, item: val, color });
+          });
+
+          const { seriesIndex } = params?.[0] || {}
+
+          return (
+            <LegendItem
+              key={`legend_${seriesIndex}_${key}`}
+              handleLegendHover={handleLegendHover}
+              handleLegendLeave={handleLegendLeave}
+              handleLegendClick={handleLegendClick}
+              name={key}
+              show={valArr?.[0]?.show}
+            >
+              {option.content && option.content(params)}
+            </LegendItem>
+          )
+        })
+      }
     </div>
   );
 };

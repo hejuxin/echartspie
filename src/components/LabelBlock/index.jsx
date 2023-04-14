@@ -1,5 +1,5 @@
 import React from 'react';
-import { getParams, isNum } from '../../utils';
+import { getParams2, isNum } from '../utils';
 import './index.css';
 
 const LabelBlock = (props) => {
@@ -10,13 +10,14 @@ const LabelBlock = (props) => {
     hightlightIndex,
     chartsWidth,
     distanceToLabelLine,
+    color
   } = props;
 
   return (
     <>
       {data.map((item, index) => {
         if (!item.show) return <></>;
-        const params = getParams({ data, index });
+        const params = getParams2({ data, item, color });
 
         const posItem = labelPos[index];
         const startPos = posItem?.[0] || [];
@@ -162,8 +163,8 @@ const LabelBlock = (props) => {
               {isShowActive
                 ? activeLabel?.content(params)
                 : isShowLabel &&
-                  normalLabel?.content &&
-                  normalLabel?.content(params)}
+                normalLabel?.content &&
+                normalLabel?.content(params)}
             </div>
           </>
         );

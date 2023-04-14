@@ -1,6 +1,16 @@
 import React from 'react';
-import { defaultData, defaultColor } from '../components/defaultOption';
+import { defaultData } from '../mock';
 import Pie from '../components';
+
+const color = [
+  '#FF0000',
+  '#FF7F00',
+  '#FFFF00',
+  '#00FF00',
+  '#00FFFF',
+  '#0000FF',
+  '#8B00FF'
+]
 
 const LabelDemo1 = () => {
   const dataSource = defaultData.map((item, index) => {
@@ -8,10 +18,12 @@ const LabelDemo1 = () => {
     return {
       ...item,
       label: {
-        color: defaultColor[colorIndex],
+        color: color[colorIndex],
       },
     };
   });
+
+  console.log(dataSource, 'dataSource')
   return (
     <div style={{ width: 300, height: 300 }}>
       <Pie

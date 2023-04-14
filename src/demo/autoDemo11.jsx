@@ -1,5 +1,5 @@
 import React from 'react';
-import { defaultData } from '../components/defaultOption';
+import { defaultData } from '../mock';
 import Pie from '../components';
 
 const AutoDemo1 = () => {
@@ -31,6 +31,14 @@ const AutoDemo1 = () => {
               seriesIndex: [0],
               dataIndex: [0],
             },
+          }}
+          highLightOption={{
+            // 设置默认高亮，自动轮播初始项也根据该配置
+            default: {
+              seriesIndex: [0],
+              dataIndex: [0],
+            },
+            stillHigh: true
           }}
           highLightCallback={(parmas) => {
             console.log('p', parmas);
