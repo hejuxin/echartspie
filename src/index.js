@@ -18,9 +18,9 @@ const getRoute = (router) => {
 };
 
 root.render(
-  <StrictMode>
-    <BrowserRouter>
-      <Routes>{getRoute(router)}</Routes>
-    </BrowserRouter>
-  </StrictMode>
+  // <StrictMode>
+  <BrowserRouter>
+    <Routes>{getRoute(router)}</Routes>
+  </BrowserRouter>
+  // </StrictMode>
 );

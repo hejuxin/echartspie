@@ -289,7 +289,6 @@ const Pie = (props) => {
   };
 
   const handleInit = () => {
-    console.log('handleInit')
     const { labelObj, newData } = getFormatInfo();
     setLabelPos(labelObj);
     setDataSource(newData);
@@ -331,7 +330,6 @@ const Pie = (props) => {
   useMount(() => {
     const myChart = echarts.init(domRef.current);
     chartRef.current = myChart;
-    console.log('init')
     handleInit();
 
     chartRef.current.on('mouseover', (value) => {
@@ -363,7 +361,7 @@ const Pie = (props) => {
     });
     chartRef.current.on('mouseout', (value) => {
       const { seriesIndex } = value;
-      console.log('event: mouseout', seriesIndex)
+      // console.log('event: mouseout', seriesIndex)
       if (isPie && !highLightOption?.stillHigh)
         setHighInfo((info) => {
           return {
@@ -611,22 +609,22 @@ const Pie = (props) => {
         handleLegendClick={handleLegendClick}
         {...commonProps}
       />
-      {Object.keys(labelPos).map((key) => {
-        if (!labelPos[key].length) return;
-        const { series } = chartOption.current;
-        const seriesItem = series[key];
-        const labelOption = {
-          normal: {
-            ...seriesItem.label,
-            capStyle: seriesItem.labelLine?.capStyle || {},
-          },
-          active: {
-            ...seriesItem.emphasis?.label,
-            capStyle: seriesItem.emphasis?.labelLine?.capStyle || {},
-          },
-        };
-        return (
-          <>
+      {
+        Object.keys(labelPos).map((key) => {
+          if (!labelPos[key].length) return;
+          const { series } = chartOption.current;
+          const seriesItem = series[key];
+          const labelOption = {
+            normal: {
+              ...seriesItem.label,
+              capStyle: seriesItem.labelLine?.capStyle || {},
+            },
+            active: {
+              ...seriesItem.emphasis?.label,
+              capStyle: seriesItem.emphasis?.labelLine?.capStyle || {},
+            },
+          };
+          return (
             <LabelBlock
               option={labelOption}
               hightlightIndex={autoParams.autoCurrent[key]}
@@ -636,29 +634,31 @@ const Pie = (props) => {
               chartsWidth={chartRef.current.getWidth()}
               {...commonProps}
             />
-          </>
-        );
-      })}
-      {Object.keys(highInfo.data).length > 1 && (
-        <div
-          style={{
-            position: 'absolute',
-            top: 0,
-            right: 0,
-            // border: '1px solid',
-            // width: 100,
-            // height: 100,
-          }}
-        >
-          <TooltipBlock
-            autoCurrent={highInfo.data}
-            dataSource={dataSource}
-            seriesOps={chartOption.current.series}
-            {...commonProps}
-          />
-        </div>
-      )}
-    </div>
+          );
+        })
+      }
+      {
+        Object.keys(highInfo.data).length > 1 && (
+          <div
+            style={{
+              position: 'absolute',
+              top: 0,
+              right: 0,
+              // border: '1px solid',
+              // width: 100,
+              // height: 100,
+            }}
+          >
+            <TooltipBlock
+              autoCurrent={highInfo.data}
+              dataSource={dataSource}
+              seriesOps={chartOption.current.series}
+              {...commonProps}
+            />
+          </div>
+        )
+      }
+    </div >
   );
 };
 
