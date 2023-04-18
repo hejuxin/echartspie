@@ -107,8 +107,8 @@ const Pie = (props) => {
     ops.highCallback = ops.callback || highLightCallback
 
     // 兼容原有startOps
-    const defaultSeriesIndex = ops.default?.seriesIndex || formatAutoOpsData(_autoPlayOption.startOps?.seriesIndex || {}) || [];
-    const defaultDataIndex = ops.default?.dataIndex || formatAutoOpsData(_autoPlayOption.startOps?.dataIndex || {}) || [];
+    const defaultSeriesIndex = ops.default?.seriesIndex ?? formatAutoOpsData(_autoPlayOption.startOps?.seriesIndex || {}) ?? [];
+    const defaultDataIndex = ops.default?.dataIndex ?? formatAutoOpsData(_autoPlayOption.startOps?.dataIndex || {}) ?? [];
 
     if (isEmptyArray(defaultSeriesIndex) && !isEmptyArray(defaultDataIndex)) {
       ops.defaultSeriesIndex = [0];
@@ -333,8 +333,13 @@ const Pie = (props) => {
     handleInit();
 
     chartRef.current.on('mouseover', (value) => {
-      const { seriesIndex, dataIndex, data } = value;
+      const { seriesIndex, dataIndex, data = {} } = value;
 
+      const _seriesIndex = isPie ? seriesIndex : (data.seriesIndex ?? seriesIndex);
+      const _dataIndex = isPie ? dataIndex : (data.dataIndex ?? dataIndex);
+      const newVal = {
+        [_seriesIndex]: _dataIndex
+      }
       // 若有自动，移除自动
       // 记录当前位置，下次轮播从这个点开始
       if (_autoPlayOption.enable) {
@@ -344,7 +349,7 @@ const Pie = (props) => {
           const current = autoParams.getWip();
           autoParams.setWip({
             ...current,
-            [seriesIndex]: dataIndex,
+            ...newVal,
           });
         }
       }
@@ -354,7 +359,7 @@ const Pie = (props) => {
           ...info,
           data: {
             ...info?.data,
-            [seriesIndex]: dataIndex
+            ...newVal
           }
         }
       })
@@ -512,7 +517,7 @@ const Pie = (props) => {
       const highingVal = dataIndex[0];
       wholeParams = getWholeParams({
         data: dataArr,
-        item: dataArr.find(item => item.dataIndex === highingVal) || {}
+        dataIndex: highingVal
       })
     }
     _highOption.highCallback && _highOption.highCallback(paramsArr, wholeParams);

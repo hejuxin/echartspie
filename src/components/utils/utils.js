@@ -74,9 +74,9 @@ export const getParams2 = ({ data = [], item = {}, color }) => {
   };
 };
 
-export const getWholeParams = ({ data = [], item = {} }) => {
+export const getWholeParams = ({ data = [], dataIndex = 0 }) => {
   const flatData = flatAndUnique(data);
-  let parentItem = item;
+  let parentItem = flatData.find(item => item.dataIndex === dataIndex) || {};
   while (parentItem.parentId !== -1) {
     parentItem = flatData[parentItem.parentId];
   }
