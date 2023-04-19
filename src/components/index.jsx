@@ -34,7 +34,7 @@ const Pie = (props) => {
   const {
     type = 'pie',
     radius = '50%',
-    color = defaultOption.color,
+    color = [],
     data = {},
     legendOption = {},
     tooltipOption = {},
@@ -63,6 +63,16 @@ const Pie = (props) => {
   const isPie = useMemo(() => {
     return type !== 'sunburst';
   }, [type]);
+
+  const colorOps = useMemo(() => {
+    const arr = [
+      ...defaultOption.color,
+      ...color
+    ]
+
+    if (arr.length) return arr;
+    return ['#5470c6', '#91cc75', '#fac858', '#ee6666', '#73c0de', '#3ba272', '#fc8452', '#9a60b4', '#ea7ccc'];
+  }, [color]);
 
   const radiusSource = useMemo(() => {
     if (
@@ -203,13 +213,20 @@ const Pie = (props) => {
       ...defaultOption.legendOption,
       ...legendOption
     };
+
+    console.log(getLegendOps({
+      option: legendOps,
+      data,
+      seriesIndexArr: echartsSeriesIndexArr,
+      color
+    }), 'getLegendOps')
     return {
-      color,
+      color: colorOps,
       legend: getLegendOps({
         option: legendOps,
         data,
         seriesIndexArr: echartsSeriesIndexArr,
-        color
+        color: colorOps
       }),
       // todo 打平直接放到data里去
       tooltip: getTooltipOps(tooltipOps, autoInfo),
@@ -504,7 +521,7 @@ const Pie = (props) => {
       const param = getParams2({
         data: dataArr,
         item: dataArr.find(item => item.dataIndex === highingVal) || {},
-        color
+        color: colorOps
       });
 
       paramsArr.push(param);
@@ -584,7 +601,7 @@ const Pie = (props) => {
 
 
   const commonProps = {
-    color
+    color: colorOps
   }
 
   return (
