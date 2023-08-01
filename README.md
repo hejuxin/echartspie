@@ -1,3 +1,5 @@
+在线预览：[Edit on StackBlitz ⚡️](https://stackblitz.com/edit/react-xcjjav)
+
 | 参数 | 类型 | 说明| 默认值 | require|
 | ----| --- | ----------| ---- | ---|
 | type | pie \| sunburst | pie： 饼图 <br> sunburst：旭日图 | pie | false |
