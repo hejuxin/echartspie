@@ -3,10 +3,14 @@
   "version": "0.0.0",
   "private": true,
   "dependencies": {
+    "@babel/runtime": "^7.20.7",
     "@types/react": "^18.0.8",
     "@types/react-dom": "^18.0.2",
+    "ahooks": "^3.7.4",
+    "echarts": "^5.4.1",
     "react": "^18.1.0",
-    "react-dom": "^18.1.0"
+    "react-dom": "^18.1.0",
+    "react-router-dom": "^6.8.0"
   },
   "scripts": {
     "start": "react-scripts start",
@@ -16,5 +20,17 @@
   },
   "devDependencies": {
     "react-scripts": "latest"
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
   }
 }

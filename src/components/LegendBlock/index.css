@@ -1,0 +1,12 @@
+.legend-item {
+  cursor: pointer;
+}
+
+.legend-item.noselect-item {
+  color: #ccc;
+}
+
+.legend-item.noselect-item .legend-icon {
+  background: #ccc !important;
+  transform: scale(1.5);
+}
